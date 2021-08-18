@@ -1,68 +1,193 @@
-// TODO: Address all instances of `eslint-disable-next-line react-hooks/exhaustive-deps`
-
-import React, { useEffect, useState } from "react";
-import { Switch, Route, Link } from "react-router-dom";
-import { Alert, Menu } from "antd";
+import { useEthers, useContractFunction } from "@usedapp/core";
+import React from "react";
+import ConnectWalletButton from "./components/ConnectWalletButton";
+import Row from "./components/Row";
+import CurrencyContainer from "./containers/Currency";
 import {
-  GlobalOutlined,
-  QuestionCircleOutlined,
-  SearchOutlined,
-  TrophyOutlined,
-} from "@ant-design/icons";
-import "antd/dist/antd.css";
-import "./styles/App.scss";
-import { Layout } from "./components";
-import { About, DiscoverTokens, Sponsor, TokensOfAddress } from "./views";
-import { NETWORK, MAINNET } from "./constants";
+  useDrawNumbers,
+  useEntries,
+  useGetStake,
+  useGetWinningNumbers,
+  useJackpot,
+  useLottoSettings,
+} from "./hooks/JuicyLotto";
+import { useJuicyLottoContract } from "./hooks";
+import CurrencySwitcher from "./components/CurrencySwitcher";
+import calculateOdds from "./utils/calculateOdds";
+import { BigNumber } from "ethers";
+import CountUp from "react-countup";
+import { SYMBOLS, UNITS } from "./constants";
+import numberWithCommas from "./utils/numberWithCommas";
+import BuyEntriesModal from "./components/BuyEntriesModal";
+import EntriesModal from "./components/EntriesModal";
+import logo from "./assets/orange.png";
 
 function App() {
-  const [route, setRoute] = useState();
-  useEffect(() => {
-    setRoute(window.location.pathname);
-  }, [setRoute]);
+  const winningNumbers = useGetWinningNumbers();
+  const { currency, formatCurrency, convertCurrency } = CurrencyContainer.useContainer();
+  const { entries, entryFee, numOfEntries } = useEntries();
+  const { jackpot, minJackpot } = useJackpot();
+  const stake = useGetStake();
+  const { account } = useEthers();
+  const { maxNum, state } = useLottoSettings();
+  const odds = maxNum && calculateOdds(maxNum.toNumber(), 3);
+  const { drawNumbers } = useDrawNumbers();
+
+  const poolLeft = minJackpot.sub(jackpot);
+  const entriesLeft = poolLeft.div(entryFee || BigNumber.from(1));
+  const percentLeft =
+    minJackpot > 0 && jackpot > 0
+      ? Math.floor((100 / minJackpot.mul(100).div(jackpot).toNumber()) * 100)
+      : 0;
+
+  // TODO refactor this
+  const juicyLottoContract = useJuicyLottoContract();
+  const { send: sendWithdrawEntries } = useContractFunction(juicyLottoContract, "withdrawEntries");
+
+  const withdrawEntries = async () => {
+    account && sendWithdrawEntries(account);
+  };
+
+  const LotteryState = {
+    OPEN: 0,
+    DRAWING: 1,
+    CLOSED: 2,
+  };
+
+  const getStake = () => {
+    const val = stake || 0;
+    return formatCurrency(val);
+    i;
+  };
 
   return (
-    <div className="App">
-      <div hidden={NETWORK === MAINNET}>
-        <Alert message={`⚠️ This is not production. Network: ${NETWORK}. ⚠️`} type="warning" />
+    <div className="container mx-auto w-screen pt-12 px-8 sm:px-8 md:px-8 lg:px-36 xl:px-72 2xl:px-96">
+      <CurrencySwitcher />
+      <div className="flex flex-col justify-center space-y-4">
+        <div className="mx-16 sm:mx-36 md:mx-48 flex flex-col justify-center items-center">
+          <div className="text-6xl sm:text-5xl md:text-6xl italic absolute px-2 mt-8 md:mt-16 bg-gradient-to-r from-primary to-primary-focus">
+            juicy lotto
+          </div>
+          <img className="-ml-4 sm:-ml-8" src={logo} />
+        </div>
+
+        <div className="bg-base-200 bg-opacity-50 p-4 pt-0 rounded flex flex-col justify-center space-y-4">
+          <div className="text-center text-5xl font-black">
+            <div
+              className={`badge ${
+                state === LotteryState.OPEN
+                  ? "badge-primary"
+                  : state === LotteryState.DRAWING
+                  ? "badge-accent"
+                  : "badge-error"
+              } uppercase leading-none`}
+            >
+              {state === LotteryState.OPEN && "Open"}
+              {state === LotteryState.DRAWING && "Drawing Numbers"}
+              {state === LotteryState.CLOSED && "Closed"}
+            </div>
+            <div className="divider">
+              {currency === UNITS.USD && SYMBOLS.USD}
+              <CountUp
+                end={convertCurrency(jackpot)}
+                duration={2}
+                decimals={currency === UNITS.USD ? 2 : 5}
+                useEasing
+                formattingFn={currency === UNITS.USD && numberWithCommas}
+              />
+              {currency === UNITS.ETH && SYMBOLS.ETH}
+            </div>
+          </div>
+          <div className="flex content-center items-center space-x-4">
+            <progress
+              className="progress progress-primary flex-shrink"
+              value={percentLeft}
+              max="100"
+            ></progress>
+            <span className="flex-grow w-full sm:w-1/4 badge p-4">{percentLeft}% funded</span>
+          </div>
+        </div>
+
+        <div className="bg-base-200 bg-opacity-80 p-8 rounded">
+          <Row label="Total Entries" value={numOfEntries && numOfEntries.toString()} />
+          <Row label="Entries Needed" value={entriesLeft > 0 ? entriesLeft.toString() : "0"} />
+          <Row label="Entry Fee" value={entryFee && formatCurrency(entryFee)} />
+          <Row
+            label="Last Winning Numbers"
+            value={
+              winningNumbers.length
+                ? winningNumbers.map((num, i) => (
+                    <span>
+                      {num.toString()}
+                      {(i === 0 || i === 1) && "-"}
+                    </span>
+                  ))
+                : "N/A"
+            }
+          />
+          <Row label="Odds of Winning" value={odds && `1 in ${numberWithCommas(odds)}`} />
+        </div>
+
+        {account ? (
+          <>
+            <div>
+              <div className="text-center">
+                <div className="badge bg-base-100 p-4 text-content max-w-full">{account}</div>
+              </div>
+
+              <div className="bg-base-200 p-8 rounded -mt-4 z-100">
+                <Row
+                  label="Entries"
+                  value={entries?.length || 0}
+                  onClick={e => {
+                    if (typeof window !== "undefined") {
+                      window.location.href = "/components/modal#entries-modal";
+                    }
+                  }}
+                />
+                <EntriesModal />
+                <Row label="Winnings" value={getStake()} />
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-8 md:space-y-0 md:flex-row md:justify-between items-center">
+              <div className="bg-base-200 p-4 w-full md:w-auto rounded flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-between w-auto">
+                <button
+                  className="btn btn-outline btn-neutral w-full sm:w-auto"
+                  disabled={entries?.length === 0 || state === LotteryState.DRAWING}
+                  onClick={withdrawEntries}
+                >
+                  Withdraw Entries
+                </button>
+                <BuyEntriesModal />
+              </div>
+
+              <div className="flex flex-col space-y-8 md:space-y-0 md:space-x-4 md:flex-row md:justify-between items-center w-full md:w-auto">
+                <button
+                  className="btn btn-accent w-full md:w-auto"
+                  disabled={percentLeft < 100 || state === 1}
+                  onClick={() => {
+                    drawNumbers();
+                  }}
+                >
+                  Draw Numbers
+                </button>
+
+                <button
+                  className="btn btn-secondary w-full md:w-auto"
+                  disabled={stake.toString() === "0"}
+                >
+                  Take Winnings
+                </button>
+              </div>
+            </div>
+
+            <div className="flex justify-between mb-24 sm:m-0"></div>
+          </>
+        ) : (
+          <ConnectWalletButton />
+        )}
       </div>
-      <Layout>
-        <Menu style={{ marginBottom: 24, fontSize: 19 }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/sponsor" icon={<SearchOutlined />}>
-            <Link onClick={() => setRoute("/sponsor")} to="/sponsor" className="menu-link">
-              Sponsor
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="/tokens" icon={<TrophyOutlined />}>
-            <Link onClick={() => setRoute("/tokens")} to="/tokens" className="menu-link">
-              My Tokens
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="/discover" icon={<GlobalOutlined />}>
-            <Link onClick={() => setRoute("/discover")} to="/discover" className="menu-link">
-              Discover
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="/about" icon={<QuestionCircleOutlined />}>
-            <Link onClick={() => setRoute("/about")} to="/about" className="menu-link" />
-            About
-          </Menu.Item>
-        </Menu>
-        <Switch>
-          <Route exact path={["/about", "/"]}>
-            <About />
-          </Route>
-          <Route exact path="/sponsor">
-            <Sponsor />
-          </Route>
-          <Route path="/tokens">
-            <TokensOfAddress />
-          </Route>
-          <Route path="/discover">
-            <DiscoverTokens />
-          </Route>
-        </Switch>
-      </Layout>
     </div>
   );
 }

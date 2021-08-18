@@ -1,1 +1,1 @@
-module.exports = ["Token"];
+export default ["JuicyLotto"];

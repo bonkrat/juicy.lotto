@@ -5,8 +5,13 @@ const fs = require("fs");
 const BASE_PUBLISH_DIR = "../frontend/src/contracts";
 const SOLIDITY_FILE_SUFFIX = ".sol";
 
+async function publishContractAddress(publishDir, contractName, address) {
+  fs.writeFileSync(`${publishDir}/${contractName}.address.js`, `export default "${address}";`);
+}
+
 async function publishContract(publishDir, contractName) {
   console.log("💽 Publishing", chalk.cyan(contractName), "to", chalk.gray(publishDir));
+  console.log("bre.config.paths.artifacts", bre.config.paths.artifacts);
   try {
     let contract = fs
       .readFileSync(
@@ -18,14 +23,16 @@ async function publishContract(publishDir, contractName) {
       .toString();
     contract = JSON.parse(contract);
 
-    fs.writeFileSync(`${publishDir}/${contractName}.address.js`, `module.exports = "${address}";`);
+    publishContractAddress(publishDir, contractName, address);
+
+    fs.writeFileSync(`${publishDir}/${contractName}.address.js`, `export default "${address}";`);
     fs.writeFileSync(
       `${publishDir}/${contractName}.abi.js`,
-      `module.exports = ${JSON.stringify(contract.abi, null, 2)};`,
+      `export default ${JSON.stringify(contract.abi, null, 2)};`,
     );
     fs.writeFileSync(
       `${publishDir}/${contractName}.bytecode.js`,
-      `module.exports = "${contract.bytecode}";`,
+      `export default "${contract.bytecode}";`,
     );
 
     return true;
@@ -58,14 +65,18 @@ async function publish(network) {
   });
   fs.writeFileSync(
     `${publishDir}/contracts.js`,
-    `module.exports = ${JSON.stringify(finalContractList)};`,
+    `export default ${JSON.stringify(finalContractList)};`,
   );
 }
 
-module.exports = network =>
-  publish(network)
-    .then(() => process.exit(0))
-    .catch(error => {
-      console.error(error);
-      process.exit(1);
-    });
+module.exports = {
+  publish: network =>
+    publish(network)
+      .then(() => process.exit(0))
+      .catch(error => {
+        console.error(error);
+        process.exit(1);
+      }),
+  publishContractAddress,
+  BASE_PUBLISH_DIR,
+};

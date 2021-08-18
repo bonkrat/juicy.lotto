@@ -1,15 +1,15 @@
-# wiki.token
+# Juicy Lotto 🧃💰
 
-WikiToken is an ERC721 Ethereum Token (NFT) focused on giving back to Wikimedia.
+Juicy Lotto is a pick three lottery game driven by a Juicebox DAO. On the lottery side anyone can participate by picking three numbers and buying them as entries to the lottery.  Once the minimum jackpot is reached any user can trigger winning numbers to be drawn. If no one wins the lottery all entries and the jackpot are rolled over.
 
-NOTE: WikiToken is in no way affiliated with Wikimedia. We hope that one day we can transfer this project entirely to their team, but at the present moment they are not interested. We have created this project to give back to them – not to imitate who they are and what they do.
+On the DAO side anyone can invest in the lottery game itself through funding cycles. Anytime a winner takes their winning stake out of the lottery a percentage is cut and paid back to the Juicebox DAO treasury. Investors can pay out their DAO stake at any time to take your share of the treasury's earnings.
 
 ## Local environment setup
 
 1.  Clone the respository:
     ```
-    git clone https://github.com/odd-amphora/wiki.token.git
-    cd wiki.token
+    git clone https://github.com/bonkrat/juicy.lotto
+    cd juicy.lotto
     ```
 1.  Create `.env` files in `packages/backend`, `./packages/frontend` and `./packages/hardhat` which mirror the `.sample.env` files in the same directories.
 
@@ -47,7 +47,6 @@ NOTE: WikiToken is in no way affiliated with Wikimedia. We hope that one day we 
 #### Testnet
 
 - Kovan `yarn deploy-kovan`
-- [Rinkeby](https://rinkeby.wikitoken.org) `yarn deploy-rinkeby` (primary testnet)
 
 #### Mainnet
 
@@ -62,7 +61,7 @@ To verify any of the contracts on Etherscan, do the following:
 1.  `cd packages/hardhat`
 1.  `npx hardhat verify --network $network $contract_address $constructor_args`
 
-An example, verifying the `Token.sol` contract on Rinkeby may look like:
+An example, verifying the `JuicyLotto.sol` contract on Rinkeby may look like:
 
 ```
 npx hardhat verify --network rinkeby \

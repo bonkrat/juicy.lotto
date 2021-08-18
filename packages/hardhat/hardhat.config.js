@@ -10,7 +10,7 @@ dotenv.config();
 const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 
 /*
-      📡 This is where you configure your deploy configuration for 🏗 wiki.token
+      📡 This is where you configure your deploy configuration for 🏗 juicy.lotto 
 
       check out `packages/scripts/deploy.js` to customize your deployment
 
@@ -21,7 +21,7 @@ const { isAddress, getAddress, formatUnits, parseUnits } = utils;
 //
 // Select the network you want to deploy to here:
 //
-const defaultNetwork = "kovan";
+const defaultNetwork = "localhost";
 
 function mnemonic(network) {
   try {
@@ -85,6 +85,10 @@ module.exports = {
           },
         },
       },
+      {
+        version: "0.6.6",
+      },
+      { version: "0.4.24" },
     ],
   },
   etherscan: {
@@ -296,6 +300,25 @@ function send(signer, txparams) {
     // checkForReceipt(2, params, transactionHash, resolve)
   });
 }
+
+task("fulfill-randomness", "Fulfills the drawNumbers randomness")
+  .addParam("requestid", "The request ID from the draw numbers call")
+  .addParam("vrfaddress", "The address of the deploy VRFCoordinator contract")
+  .addParam("juicylottoaddress", "The address of the deployed JuicyLotto contract")
+  .setAction(async ({ requestid, vrfaddress, juicylottoaddress }, { ethers }) => {
+    const accounts = await ethers.getSigners();
+    const signer = accounts[0];
+    const VRFCoordinator = await ethers.getContractFactory("VRFCoordinatorMock");
+    const vrfCoordinator = new ethers.Contract(vrfaddress, VRFCoordinator.interface, signer);
+    try {
+      await vrfCoordinator.callBackWithRandomness(requestid, 7124, juicylottoaddress, {
+        gasLimit: 12450000,
+        gasPrice: 1,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  });
 
 task("send", "Send ETH")
   .addParam("from", "From address or account index")
