@@ -16,11 +16,11 @@
     "eslint-plugin-prettier": "^3.1.4"
   },
   "scripts": {
-    "frontend:build": "yarn workspace @juicy.lotto/frontend build --max-old-space-size=12288",
+    "frontend:build": "yarn workspace @juicy.lotto/frontend build",
     "frontend:eject": "yarn workspace @juicy.lotto/frontend eject",
     "frontend:dev": "yarn workspace @juicy.lotto/frontend dev",
     "frontend:test": "yarn workspace @juicy.lotto/frontend test",
-    "build": "yarn workspace @juicy.lotto/frontend build --max-old-space-size=12288",
+    "build": "yarn workspace @juicy.lotto/frontend build",
     "chain": "yarn workspace @juicy.lotto/hardhat chain --verbose",
     "fork": "yarn workspace @juicy.lotto/hardhat fork",
     "node": "yarn workspace @juicy.lotto/hardhat chain",

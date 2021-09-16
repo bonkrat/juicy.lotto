@@ -20,7 +20,8 @@ const MAX_NUM = 25,
   randomEntry = () => [1, 2, 3].map(() => randomInt()),
   LotteryState = {
     Open: 0,
-    Closed: 1,
+    DrawingNumbers: 1,
+    Closed: 2,
   };
 
 describe("JuicyLotto Contract", () => {
@@ -59,13 +60,13 @@ describe("JuicyLotto Contract", () => {
   describe("drawNumbers()", async () => {
     const value = BigNumber.from("10000000000000000000"); // 10 ETH
 
-    it("closes the lottery", async () => {
+    it("puts the lottery in a drawing numbers state", async () => {
       await linkToken.transfer(juicyLotto.address, FEE);
       await juicyLotto.connect(addr1).fund({ value });
 
       await juicyLotto.drawNumbers();
 
-      expect(await juicyLotto.state()).to.equal(LotteryState.Closed);
+      expect(await juicyLotto.state()).to.equal(LotteryState.DrawingNumbers);
     });
 
     it("requires a minimum amount of LINK token on the contract", async () => {
@@ -124,7 +125,7 @@ describe("JuicyLotto Contract", () => {
     it("lets users enter by buying multiple entries at once", async () => {
       await juicyLotto.connect(addr1).buyEntries(entries, { value: ENTRY_FEE * 2 });
 
-      const juicyEntries = await juicyLotto.connect(addr1).getEntries();
+      const juicyEntries = await juicyLotto.connect(addr1).getEntries(addr1.address);
 
       entries.map((entry, i) => {
         entry.forEach((num, j) => {
@@ -141,7 +142,7 @@ describe("JuicyLotto Contract", () => {
     it("requires entries to be in the right range", async () => {
       await expect(juicyLotto.connect(addr1).buyEntries([[1, 2, 5000]], { value: ENTRY_FEE })).to.be
         .reverted;
-      await expect(juicyLotto.connect(addr1).buyEntries([[0, 2, 3]], { value: ENTRY_FEE })).to.be
+      await expect(juicyLotto.connect(addr1).buyEntries([[-1, 2, 3]], { value: ENTRY_FEE })).to.be
         .reverted;
     });
 
@@ -166,10 +167,12 @@ describe("JuicyLotto Contract", () => {
     it("picks winner of the jackpot and grants their stake", async () => {
       await juicyLotto.connect(addr1).buyEntries(entries, { value: ENTRY_FEE * entries.length });
 
-      const transaction = await juicyLotto.drawNumbers();
+      const transaction = await juicyLotto.connect(owner).drawNumbers();
       const tx_receipt = await transaction.wait(1);
       const requestId = tx_receipt.events[3].topics[0];
       expect(requestId).to.not.be.null;
+
+      const jackpot = await juicyLotto.jackpot();
 
       await vrfCoordinator.callBackWithRandomness(requestId, expected, juicyLotto.address);
 
@@ -180,7 +183,10 @@ describe("JuicyLotto Contract", () => {
         }),
       );
 
-      expect(await juicyLotto.connect(addr1).getStake(addr1.address)).to.equal(3 * ENTRY_FEE);
+      expect(await juicyLotto.connect(owner).getStake(owner.address)).to.equal(jackpot * 0.05);
+      expect(await juicyLotto.connect(addr1).getStake(addr1.address)).to.equal(
+        jackpot - jackpot * 0.05,
+      );
       expect(await juicyLotto.jackpot()).to.equal(0);
     });
 
@@ -192,8 +198,10 @@ describe("JuicyLotto Contract", () => {
       );
 
       const jackpot = await juicyLotto.jackpot();
-      const expectedStakes = jackpot.div(addrs.length).toString();
+      const jackpotMinusDrawerStake = jackpot - jackpot * 0.05;
+      const expectedStakes = jackpotMinusDrawerStake / addrs.length;
 
+      // Draw Numbers
       const transaction = await juicyLotto.drawNumbers();
       const tx_receipt = await transaction.wait(1);
       const requestId = tx_receipt.events[3].topics[0];
@@ -233,13 +241,13 @@ describe("JuicyLotto Contract", () => {
 
       await Promise.all(
         addrs.map(async addr => {
-          expect(await juicyLotto.connect(addr).getStake()).to.equal(0);
+          expect(await juicyLotto.connect(addr).getStake(addr.address)).to.equal(0);
         }),
       );
 
       await Promise.all(
         addrs.map(async addr => {
-          expect(await juicyLotto.connect(addr).getEntries()).deep.to.equal([
+          expect(await juicyLotto.connect(addr).getEntries(addr.address)).deep.to.equal([
             [1, 2, 3].map(BigNumber.from),
             [4, 5, 6].map(BigNumber.from),
           ]);
@@ -309,6 +317,7 @@ describe("JuicyLotto Contract", () => {
       await juicyLotto.connect(addr1).buyEntries([winningNumbers], { value: ENTRY_FEE });
 
       const finalJackpot = await juicyLotto.jackpot();
+      const drawerStake = finalJackpot.mul(5).div(100);
 
       const transaction2 = await juicyLotto.drawNumbers();
       const tx_receipt2 = await transaction2.wait(1);
@@ -317,7 +326,9 @@ describe("JuicyLotto Contract", () => {
       await vrfCoordinator.callBackWithRandomness(requestId2, expected, juicyLotto.address);
 
       expect(await juicyLotto.jackpot()).to.equal(0);
-      expect(await juicyLotto.connect(addr1).getStake(addr1.address)).to.equal(finalJackpot);
+      expect(await juicyLotto.connect(addr1).getStake(addr1.address)).to.equal(
+        finalJackpot.sub(drawerStake),
+      );
     });
   });
 
@@ -328,7 +339,7 @@ describe("JuicyLotto Contract", () => {
     });
 
     it("requires the user to have some stake", async () => {
-      await expect(juicyLotto.connect(addr1).withdrawStake()).to.be.reverted;
+      await expect(juicyLotto.connect(addr1).withdrawStake(addr1.address)).to.be.reverted;
     });
 
     it("lets the user withdraw their stake", async () => {
@@ -336,29 +347,35 @@ describe("JuicyLotto Contract", () => {
       const entryTransaction = await juicyLotto
         .connect(addr1)
         .buyEntries([winningNumbers], { value: ENTRY_FEE });
-      const entryGasPrice = entryTransaction.gasPrice;
       const entry_tx_receipt = await entryTransaction.wait(1);
-      const jackpot = await juicyLotto.jackpot();
-      const entryGas = entry_tx_receipt.gasUsed.mul(entryGasPrice);
+      const entryGas = entry_tx_receipt.gasUsed.mul(entryTransaction.gasPrice);
 
       expect(await ethers.provider.getBalance(addr1.address)).to.equal(
         originalWalletAmount.sub(ENTRY_FEE).sub(entryGas),
       );
+
+      const jackpot = await juicyLotto.jackpot();
 
       const drawTransaction = await juicyLotto.connect(owner).drawNumbers();
       const draw_tx_receipt = await drawTransaction.wait(1);
       const requestId = draw_tx_receipt.events[3].topics[0];
       await vrfCoordinator.callBackWithRandomness(requestId, expected, juicyLotto.address);
 
-      const withdrawStakeTransaction = await juicyLotto.connect(addr1).withdrawStake();
+      const withdrawStakeTransaction = await juicyLotto.connect(addr1).withdrawStake(addr1.address);
       const withdraw_stake_tx_receipt = await withdrawStakeTransaction.wait(1);
       const withdrawGas = withdraw_stake_tx_receipt.gasUsed.mul(withdrawStakeTransaction.gasPrice);
 
+      const drawerJackpotStake = jackpot.mul(5).div(100);
       expect(await ethers.provider.getBalance(addr1.address)).to.equal(
-        originalWalletAmount.add(jackpot).sub(ENTRY_FEE).sub(entryGas).sub(withdrawGas),
+        originalWalletAmount
+          .add(jackpot)
+          .sub(drawerJackpotStake)
+          .sub(ENTRY_FEE)
+          .sub(entryGas)
+          .sub(withdrawGas),
       );
 
-      expect(await juicyLotto.connect(addr1).getStake()).to.equal(0);
+      expect(await juicyLotto.connect(addr1).getStake(addr1.address)).to.equal(0);
     });
   });
 
@@ -386,8 +403,8 @@ describe("JuicyLotto Contract", () => {
         .connect(addr1)
         .buyEntries([winningNumbers, [1, 2, 3]], { value: ENTRY_FEE * 2 });
 
-      await juicyLotto.connect(addr1).withdrawEntries();
-      expect(await juicyLotto.connect(addr1).getEntries()).deep.to.equal([]);
+      await juicyLotto.connect(addr1).withdrawEntries(addr1.address);
+      expect(await juicyLotto.connect(addr1).getEntries(addr1.address)).deep.to.equal([]);
 
       const jackpot = await juicyLotto.jackpot();
       expect(jackpot).to.equal("5000000000000000000");

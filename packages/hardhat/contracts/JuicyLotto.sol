@@ -35,6 +35,8 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
   uint256 public numOfEntries;
   // The staked amount of winnings for each entrant address.
   mapping(address => uint256) stake;
+  // The address that request the current number drawing.
+  address numberDrawer;
 
   // CHAINLINK VRF
   bytes32 internal keyHash;
@@ -186,12 +188,13 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
     _changeState(LotteryState.DrawingNumbers);
 
     requestId = requestRandomness(keyHash, fee);
+    numberDrawer = msg.sender;
     emit DrawNumbers(requestId);
     return requestId;
   }
 
   /**
-    Callback function used by VRF Coordinator. Selects winners and sets winning stakes for correct guesses.
+    Callback function used by VRF Coordinator. Selects winners and sets winning stakes for correct guesses. Pays the address who drew numbers if there is a winner.
     @dev clears out entries and jackpot only if there is a winner.
     @param _requestId the Chainlink VRF request ID.
     @param _randomness the random value returned from the VRF.
@@ -214,11 +217,18 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
     emit WinningNumbers(winningNumbers);
 
     if (winners.length > 0) {
-      uint256 winningStake = jackpot / winners.length;
+      // Payout the address that called drawNumbers (5%).
+      uint256 drawerStake = (jackpot * 5) / 100;
+      uint256 availableJackpot = jackpot - drawerStake;
+      stake[numberDrawer] = drawerStake;
+      delete numberDrawer;
+
+      uint256 winningStake = availableJackpot / winners.length;
+
       for (uint256 i = 0; i < winners.length; i++) {
         if (winningStake > 0) {
           stake[winners[i]] = winningStake;
-          jackpot -= winningStake;
+          availableJackpot -= winningStake;
           emit Winner(winners[i], winningStake);
         }
       }
@@ -233,7 +243,7 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
       }
 
       delete entrants;
-
+      jackpot = 0;
       numOfEntries = 0;
     }
 
@@ -246,6 +256,7 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
     @return the message sender's entries.
   */
   function getEntries(address account) public view returns (uint256[3][] memory) {
+    require(account == msg.sender, "JuicyLotto::getEntries INVALID_ACCOUNT_ADDRESS");
     return entries[account];
   }
 
@@ -255,6 +266,7 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
     @return the message sender's accrued stake.
   */
   function getStake(address account) public view returns (uint256) {
+    require(account == msg.sender, "JuicyLotto::getStake INVALID_ACCOUNT_ADDRESS");
     return stake[account];
   }
 
@@ -269,7 +281,8 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
   /**
     Withdraw any winnings you have staked. 
    */
-  function withdrawStake() public {
+  function withdrawStake(address account) public {
+    require(account == msg.sender, "JuicyLotto::withdrawStake INVALID_ACCOUNT_ADDRESS");
     require(stake[msg.sender] > 0, "JuicyLotto::withdrawStake INSUFFICIENT_ENTRANT_STAKE");
     uint256 _total = stake[msg.sender];
     stake[msg.sender] = 0;
