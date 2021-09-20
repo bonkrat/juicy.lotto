@@ -23,16 +23,13 @@ const getJuiceProjectId = () => {
   if (network === NETWORK_LOCALHOST) {
     return "0x01"; // Juice is disabled in local dev anyway.
   }
-  // if (network === NETWORK_KOVAN) {
-  //   return "0x01";
-  // }
-  // if (network === NETWORK_RINKEBY) {
-  //   return "0x0c";
-  // }
+  if (network === NETWORK_RINKEBY) {
+    return "0x05";
+  }
   // if (network === NETWORK_MAINNET) {
   //   return "0x0a";
   // }
-  throw error(`Network ${network} does not have a Juice project configured`);
+  throw new Error(`Network ${network} does not have a Juice project configured`);
 };
 
 const getJuiceTerminalDirectory = () => {
@@ -48,7 +45,7 @@ const getJuiceTerminalDirectory = () => {
   if (network === NETWORK_MAINNET) {
     return "0x46C9999A2EDCD5aA177ed7E8af90c68b7d75Ba46";
   }
-  throw error(`Network ${network} does not have a Juice terminal directory configured`);
+  throw new Error(`Network ${network} does not have a Juice terminal directory configured`);
 };
 
 const getLinkTokenAddress = async () => {

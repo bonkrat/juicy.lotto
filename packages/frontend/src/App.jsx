@@ -64,8 +64,8 @@ function App() {
     <div className="container mx-auto w-screen pt-12 px-8 sm:px-8 md:px-8 lg:px-36 xl:px-72 2xl:px-96">
       <CurrencySwitcher />
       <div className="flex flex-col justify-center space-y-4">
-        <div className="mx-16 sm:mx-36 md:mx-48 flex flex-col justify-center items-center">
-          <div className="text-6xl sm:text-5xl md:text-6xl italic absolute px-2 mt-8 md:mt-16 bg-gradient-to-r from-primary to-primary-focus">
+        <div className="mx-8 sm:mx-36 md:mx-48 flex justify-center items-center">
+          <div className="text-6xl sm:text-7xl md:text-8xl italic absolute px-2 mt-8 md:mt-16 bg-gradient-to-r from-primary to-primary-focus">
             juicy lotto
           </div>
           <img className="-ml-4 sm:-ml-8" src={logo} />
@@ -100,7 +100,7 @@ function App() {
           </div>
           <div className="flex content-center items-center space-x-4">
             <progress
-              className="progress progress-primary flex-shrink"
+              className="progress progress-secondary flex-shrink"
               value={percentLeft}
               max="100"
             ></progress>
