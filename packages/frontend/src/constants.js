@@ -40,6 +40,7 @@ export const JUICY_LOTTO_ABI = JUICY_LOTTO_ABIS[NETWORK];
 export const JUICY_LOTTO_ADDRESS = JUICY_LOTTO_ADDRESSES[NETWORK];
 
 console.log("NETWORK_TO_CHAIN_ID[ENTWORK]", NETWORK_TO_CHAIN_ID[NETWORK]);
+console.log("NETWORK", NETWORK);
 
 export const networkConfig = {
   readOnlyChainId: NETWORK_TO_CHAIN_ID[NETWORK],
@@ -56,7 +57,7 @@ export const networkConfig = {
     // [ChainId.Mainnet]: `https://mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
   },
   // supportedChains: [31337, ChainId.Localhost, ChainId.Kovan, ChainId.Rinkeby, ChainId.Mainnet],
-  supportedChains: [31337, ChainId.Localhost],
+  supportedChains: [31337, ChainId.Localhost, ChainId.Rinkeby],
 };
 
 export const UNITS = {
