@@ -46,7 +46,7 @@ function useJuicyCall(method, ...args) {
 
 export function useLatestUSDEthPrice() {
   const [price] = useJuicyCall("getLatestUSDEthPrice");
-  return { price: price / 100 };
+  return { price: price / 100000000 };
 }
 
 export function useDrawNumbers() {

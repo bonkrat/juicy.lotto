@@ -135,7 +135,7 @@ const getVRFCoordinatorAddress = async linkTokenAddress => {
 const getV3AggregatorAddress = async () => {
   if (network === NETWORK_LOCALHOST) {
     const V3Aggregator = await ethers.getContractFactory("MockV3Aggregator"),
-      v3aggregator = await V3Aggregator.deploy(2, 300000);
+      v3aggregator = await V3Aggregator.deploy(2, 271205340014);
     return v3aggregator.address;
   }
   if (network === NETWORK_KOVAN) {
