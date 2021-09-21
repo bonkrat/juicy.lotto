@@ -22,7 +22,7 @@ export const RINKEBY = "rinkeby";
 export const KOVAN = "kovan";
 export const LOCALHOST = "localhost";
 
-export const NETWORK = process.env.REACT_APP_INFURA_NETWORK || "localhost";
+export const NETWORK = import.meta.env.VITE_INFURA_NETWORK || "localhost";
 
 const localhostChainId = 31337;
 const rinkebyChainId = ChainId.Rinkeby;
@@ -39,15 +39,12 @@ export const NETWORK_TO_CHAIN_ID = {
 export const JUICY_LOTTO_ABI = JUICY_LOTTO_ABIS[NETWORK];
 export const JUICY_LOTTO_ADDRESS = JUICY_LOTTO_ADDRESSES[NETWORK];
 
-console.log("NETWORK_TO_CHAIN_ID[ENTWORK]", NETWORK_TO_CHAIN_ID[NETWORK]);
-console.log("NETWORK", NETWORK);
-
 export const networkConfig = {
   readOnlyChainId: NETWORK_TO_CHAIN_ID[NETWORK],
   readOnlyUrls: {
     31337: `http://localhost:8545`,
     [ChainId.Localhost]: `http://localhost:8545`,
-    [ChainId.Rinkeby]: `https://rinkeby.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+    [ChainId.Rinkeby]: `https://rinkeby.infura.io/v3/${import.meta.env.VITE_INFURA_PROJECT_ID}`,
     // [ChainId.Mainnet]: `https://mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
   },
   multicallAddresses: {
