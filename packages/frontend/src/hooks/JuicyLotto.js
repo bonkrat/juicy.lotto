@@ -44,6 +44,11 @@ function useJuicyCall(method, ...args) {
   );
 }
 
+export function useLatestUSDEthPrice() {
+  const [price] = useJuicyCall("getLatestUSDEthPrice");
+  return { price: price / 100 };
+}
+
 export function useDrawNumbers() {
   const juicyLottoContract = useJuicyLottoContract();
   const { send: drawNumbers, events } = useContractFunction(juicyLottoContract, "drawNumbers");
