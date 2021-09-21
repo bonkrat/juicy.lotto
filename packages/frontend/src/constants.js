@@ -1,19 +1,19 @@
 import { ChainId } from "@usedapp/core";
-import localhostABIs from "./contracts/localhost/JuicyLotto.abi";
+import localhostABI from "./contracts/localhost/JuicyLotto.abi";
 import localhostAddresses from "./contracts/localhost/JuicyLotto.address";
 import localMulticallAddress from "./contracts/localhost/MultiCall.address";
+import rinkebyABI from "./contracts/rinkeby/JuicyLotto.abi";
+import rinkebyAddresses from "./contracts/rinkeby/JuicyLotto.address";
 
 const JUICY_LOTTO_ABIS = {
-  localhost: localhostABIs,
-  // kovan: require("./contracts/kovan/JuicyLotto.abi"),
-  // rinkeby: require("./contracts/rinkeby/JuicyLotto.abi"),
+  localhost: localhostABI,
+  rinkeby: rinkebyABI,
   // mainnet: require("./contracts/mainnet/JuicyLotto.abi"),
 };
 
 const JUICY_LOTTO_ADDRESSES = {
   localhost: localhostAddresses,
-  // kovan: require("./contracts/kovan/JuicyLotto.address"),
-  // rinkeby: require("./contracts/rinkeby/JuicyLotto.address"),
+  rinkeby: rinkebyAddresses,
   // mainnet: "0xD224B0eAf5B5799ca46D9FdB89a2C10941E66109",
 };
 
@@ -46,14 +46,12 @@ export const networkConfig = {
   readOnlyUrls: {
     31337: `http://localhost:8545`,
     [ChainId.Localhost]: `http://localhost:8545`,
-    // [ChainId.Kovan]: `https://kovan.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
-    // [ChainId.Rinkeby]: `https://rinkeby.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+    [ChainId.Rinkeby]: `https://rinkeby.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
     // [ChainId.Mainnet]: `https://mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
   },
   multicallAddresses: {
     31337: localMulticallAddress,
     [ChainId.Localhost]: localMulticallAddress,
-    // [ChainId.Kovan]: `https://kovan.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
     // [ChainId.Rinkeby]: `https://rinkeby.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
     // [ChainId.Mainnet]: `https://mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
   },

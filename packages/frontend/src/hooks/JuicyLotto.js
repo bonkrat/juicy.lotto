@@ -10,7 +10,7 @@ const logEvent = ({ name, topic, args }) => {
   console.log("%c args: ", "background: #222; color: #dada55", args);
 };
 
-export default function useJuicyLottoContract(readOnly = false) {
+export default async function useJuicyLottoContract(readOnly = false) {
   const { library } = useEthers();
 
   const readNetworkUrl =
