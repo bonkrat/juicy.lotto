@@ -58,7 +58,6 @@ function App() {
   const getStake = () => {
     const val = stake || 0;
     return formatCurrency(val);
-    i;
   };
 
   return (

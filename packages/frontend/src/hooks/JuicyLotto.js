@@ -33,6 +33,7 @@ export default async function useJuicyLottoContract(readOnly = false) {
   );
 }
 
+// TODO Refactor these together
 function useJuicyCall(method, ...args) {
   return (
     useContractCall({
@@ -44,9 +45,18 @@ function useJuicyCall(method, ...args) {
   );
 }
 
-export function useLatestUSDEthPrice() {
-  const [price] = useJuicyCall("getLatestUSDEthPrice");
-  return { price: price / 100000000 };
+function useJuicyCallWithAccount(method, ...args) {
+  const { account } = useEthers();
+  return (
+    useContractCall(
+      account && {
+        abi: new Interface(JUICY_LOTTO_ABI),
+        address: JUICY_LOTTO_ADDRESS,
+        method,
+        args: [...args],
+      },
+    ) || []
+  );
 }
 
 export function useDrawNumbers() {
@@ -58,8 +68,8 @@ export function useDrawNumbers() {
 
 export function useEntries() {
   const { account } = useEthers();
-  const [entries] = useJuicyCall("getEntries", account);
-  const [entryFee] = useJuicyCall("entryFee"); // TODO Remove this in favor of settings.
+  const [entries] = useJuicyCallWithAccount("getEntries", account);
+  const [entryFee] = useJuicyCall("entryFee");
   const [numOfEntries] = useJuicyCall("numOfEntries");
   const juicyLottoContract = useJuicyLottoContract();
   const { send: sendBuyEntries } = useContractFunction(juicyLottoContract, "buyEntries");
@@ -79,15 +89,21 @@ export function useLottoSettings() {
   return { maxNum, state, entryFee };
 }
 
+export function useLatestUSDEthPrice() {
+  const [price] = useJuicyCall("getLatestUSDEthPrice");
+  return { price: price / 100000000 };
+}
+
 export function useJackpot() {
   const [jackpot] = useJuicyCall("jackpot");
   const [minJackpot] = useJuicyCall("minJackpot");
+
   return { jackpot: jackpot ?? BigNumber.from(0), minJackpot: minJackpot ?? BigNumber.from(0) };
 }
 
 export function useGetStake() {
   const { account } = useEthers();
-  const [stake] = useJuicyCall("getStake", account);
+  const [stake] = useJuicyCallWithAccount("getStake", account);
 
   return stake ?? BigNumber.from(0);
 }
