@@ -13,10 +13,25 @@ const logEvent = ({ name, topic, args }) => {
 export default async function useJuicyLottoContract(readOnly = false) {
   const { library } = useEthers();
 
+  console.log("networkConfig.readOnlyChainId", networkConfig.readOnlyChainId);
+  console.log("networkConfig.readonlyUrls", networkConfig.readOnlyUrls);
+  console.log("readNetworkUrl", networkConfig.readOnlyUrls[networkConfig.readOnlyChainId]);
+
   const readNetworkUrl =
     networkConfig.readOnlyChainId &&
     networkConfig.readOnlyUrls &&
     networkConfig.readOnlyUrls[networkConfig.readOnlyChainId];
+
+  console.log(readNetworkUrl);
+
+  const testContract = new Contract(
+    JUICY_LOTTO_ADDRESS,
+    JUICY_LOTTO_ABI,
+    library?.getSigner() ?? new providers.JsonRpcProvider(readNetworkUrl),
+  );
+
+  console.log("testContract", testContract);
+  console.log("testContract.connect", testContract.connect);
 
   if (readOnly) {
     return new Contract(
