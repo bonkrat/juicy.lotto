@@ -50,10 +50,9 @@ export const networkConfig = {
   multicallAddresses: {
     31337: localMulticallAddress,
     [ChainId.Localhost]: localMulticallAddress,
-    // [ChainId.Rinkeby]: `https://rinkeby.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
-    // [ChainId.Mainnet]: `https://mainnet.infura.io/v3/${process.env.REACT_APP_INFURA_PROJECT_ID}`,
+    [ChainId.Rinkeby]: "0x42Ad527de7d4e9d9d011aC45B31D8551f8Fe9821",
+    // [ChaindId.Mainnet]: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
   },
-  // supportedChains: [31337, ChainId.Localhost, ChainId.Kovan, ChainId.Rinkeby, ChainId.Mainnet],
   supportedChains: [31337, ChainId.Localhost, ChainId.Rinkeby],
 };
 
