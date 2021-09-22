@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import CurrencyContainer from "../containers/Currency";
 import { useEntries, useLottoSettings } from "../hooks/JuicyLotto";
 import Row from "./Row";
-import { BigNumber } from "ethers";
 
 function times(num, cb) {
   let result = [];
