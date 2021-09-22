@@ -2,10 +2,10 @@ import React from "react";
 import { useEntries } from "../hooks/JuicyLotto";
 import { BigNumber } from "ethers";
 
-function EntriesModal() {
+function EntriesModal({ open, onClose }) {
   const { entries } = useEntries();
   return (
-    <div id="entries-modal" class="modal">
+    <div id="entries-modal" className={`modal ${open ? "modal-open" : ""}`}>
       <div class="modal-box">
         <div className="flex flex-wrap flex-row justify-center sm:justify-start h-64 mb-2 overflow-y-scroll">
           {entries?.map(entry => {
@@ -21,7 +21,7 @@ function EntriesModal() {
           })}
         </div>
         <div class="modal-action">
-          <a href="/components/modal#" class="btn">
+          <a onClick={onClose} class="btn">
             Close
           </a>
         </div>

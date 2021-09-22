@@ -50,6 +50,7 @@ function BuyEntriesModal() {
   const [entries, setEntries] = useState([]);
   const [number, setNumber] = useState(pickNum);
   const { state } = useLottoSettings();
+  const [showBuyModal, setShowBuyModal] = useState(false);
 
   useEffect(() => {
     setNumber(pickNum());
@@ -58,14 +59,14 @@ function BuyEntriesModal() {
 
   return (
     <>
-      <a
+      <button
         className="btn btn-primary w-full sm:w-auto"
-        href="/components/modal#buy-entries-modal"
+        onClick={() => setShowBuyModal(true)}
         disabled={state === 1}
       >
         Buy Entries
-      </a>
-      <div id="buy-entries-modal" class="modal">
+      </button>
+      <div id="buy-entries-modal" className={`modal ${showBuyModal ? "modal-open" : ""}`}>
         <div class="modal-box">
           <div className="flex flex-wrap flex-row content-start justify-start h-64 mb-4 overflow-y-scroll">
             {entries?.map(entry => {
@@ -127,25 +128,25 @@ function BuyEntriesModal() {
           </div>
 
           <div class="modal-action">
-            <a
-              href="/components/modal#"
+            <button
               class="btn"
               onClick={() => {
                 setEntries(randomEntries());
+                setShowBuyModal(false);
               }}
             >
               Cancel
-            </a>
-            <a
-              href="/components/modal#"
+            </button>
+            <button
               class="btn btn-primary"
               onClick={() => {
                 buyEntries(entries.map(entry => [...entry.numbers]));
+                setShowBuyModal(false);
               }}
               disabled={!entries.length}
             >
               Buy {entries?.length} Entries
-            </a>
+            </button>
           </div>
         </div>
       </div>

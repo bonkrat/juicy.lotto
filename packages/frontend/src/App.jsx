@@ -1,5 +1,5 @@
 import { useEthers, useContractFunction } from "@usedapp/core";
-import React from "react";
+import React, { useState } from "react";
 import ConnectWalletButton from "./components/ConnectWalletButton";
 import Row from "./components/Row";
 import CurrencyContainer from "./containers/Currency";
@@ -32,6 +32,7 @@ function App() {
   const { maxNum, state } = useLottoSettings();
   const odds = maxNum && calculateOdds(maxNum.toNumber(), 3);
   const { drawNumbers } = useDrawNumbers();
+  const [showEntriesModal, setShowEntriesModal] = useState(false);
 
   const poolLeft = minJackpot.sub(jackpot);
   const entriesLeft = poolLeft.div(entryFee || BigNumber.from(1));
@@ -139,13 +140,16 @@ function App() {
                 <Row
                   label="Entries"
                   value={entries?.length || 0}
-                  onClick={e => {
-                    if (typeof window !== "undefined") {
-                      window.location.href = "/components/modal#entries-modal";
-                    }
+                  onClick={() => {
+                    setShowEntriesModal(true);
                   }}
                 />
-                <EntriesModal />
+                <EntriesModal
+                  open={showEntriesModal}
+                  onClose={() => {
+                    setShowEntriesModal(false);
+                  }}
+                />
                 <Row label="Winnings" value={getStake()} />
               </div>
             </div>
