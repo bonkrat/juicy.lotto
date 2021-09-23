@@ -6,7 +6,7 @@ function EntriesModal({ open, onClose }) {
   const { entries } = useEntries();
   return (
     <div id="entries-modal" className={`modal ${open ? "modal-open" : ""}`}>
-      <div class="modal-box">
+      <div className="modal-box">
         <div className="flex flex-wrap flex-row justify-center sm:justify-start h-64 mb-2 overflow-y-scroll">
           {entries?.map(entry => {
             return (
@@ -20,8 +20,8 @@ function EntriesModal({ open, onClose }) {
             );
           })}
         </div>
-        <div class="modal-action">
-          <a onClick={onClose} class="btn">
+        <div className="modal-action">
+          <a onClick={onClose} className="btn">
             Close
           </a>
         </div>

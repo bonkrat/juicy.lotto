@@ -25,7 +25,7 @@ function NumberSelect({ onChange, val }) {
   const { maxNum } = useLottoSettings();
 
   return (
-    <select class="select select-bordered w-4 sm:w-24" onChange={onChange}>
+    <select className="select select-bordered w-4 sm:w-24" onChange={onChange}>
       <option disabled="disabled" selected={val === undefined}>
         Number
       </option>
@@ -66,7 +66,7 @@ function BuyEntriesModal() {
         Buy Entries
       </button>
       <div id="buy-entries-modal" className={`modal ${showBuyModal ? "modal-open" : ""}`}>
-        <div class="modal-box">
+        <div className="modal-box">
           <div className="flex flex-wrap flex-row content-start justify-start h-64 mb-4 overflow-y-scroll">
             {entries?.map(entry => {
               return (
@@ -126,9 +126,9 @@ function BuyEntriesModal() {
             </button>
           </div>
 
-          <div class="modal-action">
+          <div className="modal-action">
             <button
-              class="btn"
+              className="btn"
               onClick={() => {
                 setEntries(randomEntries());
                 setShowBuyModal(false);
@@ -137,7 +137,7 @@ function BuyEntriesModal() {
               Cancel
             </button>
             <button
-              class="btn btn-primary"
+              className="btn btn-primary"
               onClick={() => {
                 buyEntries(entries.map(entry => [...entry.numbers]));
                 setShowBuyModal(false);
