@@ -53,9 +53,9 @@ function useJuicyCallWithAccount(method, ...args) {
         abi: new Interface(JUICY_LOTTO_ABI),
         address: JUICY_LOTTO_ADDRESS,
         method,
-        args: [...args],
+        args: [account],
       },
-    ) || []
+    ) ?? []
   );
 }
 
@@ -67,8 +67,7 @@ export function useDrawNumbers() {
 }
 
 export function useEntries() {
-  const { account } = useEthers();
-  const [entries] = useJuicyCallWithAccount("getEntries", account);
+  const [entries] = useJuicyCallWithAccount("getEntries");
   const [entryFee] = useJuicyCall("entryFee");
   const [numOfEntries] = useJuicyCall("numOfEntries");
   const juicyLottoContract = useJuicyLottoContract();
@@ -103,7 +102,7 @@ export function useJackpot() {
 
 export function useGetStake() {
   const { account } = useEthers();
-  const [stake] = useJuicyCallWithAccount("getStake", account);
+  const [stake] = useJuicyCallWithAccount("getStake", account?.address);
 
   return stake ?? BigNumber.from(0);
 }
