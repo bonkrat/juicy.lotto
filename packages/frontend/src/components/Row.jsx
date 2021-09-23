@@ -1,6 +1,6 @@
 import React from "react";
 
-function Row({ label, value, size = "lg", borderColor = "base-100", onClick, className }) {
+function Row({ label, value, size = "lg", borderColor = "white", onClick, className }) {
   return (
     <div
       className={`flex justify-between text-content py-2 px-4 ${className} ${
@@ -10,7 +10,7 @@ function Row({ label, value, size = "lg", borderColor = "base-100", onClick, cla
     >
       <div className={`lg:text-${size} sm:text-xl`}>{label}</div>
       <div
-        className={`flex-grow border-dotted border-0 border-b-4 border-${borderColor} mx-2`}
+        className={`flex-grow border-dotted border-0 border-b-4 border-${borderColor} border-opacity-5 mx-2`}
       ></div>
       <div className={`lg:text-${size} sm:text-xl text-right`}>{value}</div>
     </div>
