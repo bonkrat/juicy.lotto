@@ -191,9 +191,10 @@ const main = async () => {
     publishContractAddress(`${BASE_PUBLISH_DIR}/${network}`, "MultiCall", deployed.address);
   }
 
-  const maxNum = 25;
+  const maxNum = 5;
   const entryFee = 0.0005 * 10 ** 18;
-  const minJackpot = "1000000000000000000";
+  // const minJackpot = "1000000000000000000";
+  const minJackpot = BigNumber.from("1000000000000000000").div(100); // 1/100th of an Eth
   const juiceboxFee = 5;
   const linkAddress = await getLinkTokenAddress();
   const vrfCoordinatorAddress = await getVRFCoordinatorAddress(linkAddress);
@@ -276,13 +277,13 @@ const main = async () => {
 
   console.log("\n");
 
-  const fundAmount = BigNumber.from(minJackpot);
-  console.log(`Funding JuicyLotto contract with ${fundAmount.toString()} wei...\n`);
-
-  // const fundAmount = BigNumber.from(minJackpot).sub(BigNumber.from(entryFee).mul(500));
-
   [owner, ...addrs] = await ethers.getSigners();
-  await juicyLotto.connect(owner).fund({ value: fundAmount });
+  if (network === NETWORK_LOCALHOST) {
+    const fundAmount = BigNumber.from(minJackpot);
+    console.log(`Funding JuicyLotto contract with ${fundAmount.toString()} wei...\n`);
+
+    await juicyLotto.connect(owner).fund({ value: fundAmount });
+  }
 
   if (network === NETWORK_LOCALHOST) {
     const LinkToken = await ethers.getContractFactory("LinkToken");
