@@ -256,7 +256,6 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
     @return the message sender's entries.
   */
   function getEntries(address account) public view returns (uint256[3][] memory) {
-    require(account == msg.sender, "JuicyLotto::getEntries INVALID_ACCOUNT_ADDRESS");
     return entries[account];
   }
 
@@ -266,7 +265,6 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
     @return the message sender's accrued stake.
   */
   function getStake(address account) public view returns (uint256) {
-    require(account == msg.sender, "JuicyLotto::getStake INVALID_ACCOUNT_ADDRESS");
     return stake[account];
   }
 
