@@ -21,6 +21,7 @@ import numberWithCommas from "./utils/numberWithCommas";
 import BuyEntriesModal from "./components/BuyEntriesModal";
 import EntriesModal from "./components/EntriesModal";
 import logo from "./assets/orange.png";
+import InfoModal from "./components/InfoModal";
 
 function App() {
   const winningNumbers = useGetWinningNumbers();
@@ -61,8 +62,11 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto w-screen pt-12 px-8 sm:px-8 md:px-8 lg:px-36 xl:px-72 2xl:px-96">
-      <CurrencySwitcher />
+    <div className="container mx-auto pt-8 px-8 sm:px-8 md:px-8 lg:px-36 xl:px-72 2xl:px-96">
+      <div className="relative w-full">
+        <CurrencySwitcher />
+        <InfoModal />
+      </div>
       <div className="flex flex-col justify-center space-y-4">
         <div className="mx-8 sm:mx-36 md:mx-48 flex justify-center items-center">
           <div className="text-6xl sm:text-7xl md:text-8xl italic absolute px-2 mt-8 md:mt-16 bg-gradient-to-r from-primary to-primary-focus">
@@ -165,7 +169,7 @@ function App() {
                 <BuyEntriesModal />
               </div>
 
-              <div className="flex flex-col space-y-8 md:space-y-0 md:space-x-4 md:flex-row md:justify-between items-center w-full md:w-auto">
+              <div className="px-4 w-full md:w-auto flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-between w-auto">
                 <button
                   className="btn btn-accent w-full md:w-auto"
                   disabled={percentLeft < 100 || state === 1}
@@ -180,7 +184,7 @@ function App() {
                   className="btn btn-secondary w-full md:w-auto"
                   disabled={stake.toString() === "0"}
                 >
-                  Take Winnings
+                  Collect Winnings
                 </button>
               </div>
             </div>

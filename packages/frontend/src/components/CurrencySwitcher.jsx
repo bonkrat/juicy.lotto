@@ -7,7 +7,7 @@ function CurrencySwitcher() {
 
   return (
     <button
-      className="fixed top-4 left-4 btn btn-neutral font-bold text-lg"
+      className="relative top-4 left-4 btn btn-neutral font-bold text-lg"
       onClick={toggleCurrency}
     >
       {SYMBOLS[currency]}
