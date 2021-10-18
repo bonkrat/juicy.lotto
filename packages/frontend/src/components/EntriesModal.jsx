@@ -7,7 +7,8 @@ function EntriesModal({ open, onClose }) {
   return (
     <div id="entries-modal" className={`modal ${open ? "modal-open" : ""}`}>
       <div className="modal-box">
-        <div className="flex flex-wrap flex-row justify-center sm:justify-start h-64 mb-2 overflow-y-scroll">
+        <div className="flex flex-wrap flex-row justify-center sm:justify-start mb-2 overflow-y-scroll">
+          {!entries?.length && <div>No Entries</div>}
           {entries?.map(entry => {
             return (
               <div className="flex justify-center items-center p-2">

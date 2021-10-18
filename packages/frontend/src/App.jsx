@@ -22,6 +22,7 @@ import BuyEntriesModal from "./components/BuyEntriesModal";
 import EntriesModal from "./components/EntriesModal";
 import logo from "./assets/orange.png";
 import InfoModal from "./components/InfoModal";
+import formatAddress from "./utils/formatAddress";
 
 function App() {
   const winningNumbers = useGetWinningNumbers();
@@ -62,7 +63,7 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto pt-8 px-8 sm:px-8 md:px-8 lg:px-36 xl:px-72 2xl:px-96">
+    <div className="container mx-auto pt-2 px-8 sm:px-8 md:px-8 lg:px-36 xl:px-72 2xl:px-96 mb-8">
       <div className="relative w-full">
         <CurrencySwitcher />
         <InfoModal />
@@ -75,8 +76,8 @@ function App() {
           <img className="-ml-4 sm:-ml-8" src={logo} />
         </div>
 
-        <div className="bg-base-200 bg-opacity-50 p-4 pt-0 rounded flex flex-col justify-center space-y-4">
-          <div className="text-center text-5xl font-black">
+        <div>
+          <div className="text-center">
             <div
               className={`badge ${
                 state === LotteryState.OPEN
@@ -84,34 +85,38 @@ function App() {
                   : state === LotteryState.DRAWING
                   ? "badge-accent"
                   : "badge-error"
-              } uppercase leading-none`}
+              } uppercase leading-none font-black`}
             >
               {state === LotteryState.OPEN && "Open"}
               {state === LotteryState.DRAWING && "Drawing Numbers"}
               {state === LotteryState.CLOSED && "Closed"}
             </div>
-            <div className="divider">
-              {currency === UNITS.USD && SYMBOLS.USD}
-              <CountUp
-                end={convertCurrency(jackpot)}
-                duration={2}
-                decimals={currency === UNITS.USD ? 2 : 5}
-                useEasing
-                formattingFn={currency === UNITS.USD && numberWithCommas}
-              />
-              {currency === UNITS.ETH && SYMBOLS.ETH}
+          </div>
+
+          <div className="bg-base-200 bg-opacity-50 p-4 rounded flex flex-col justify-center space-y-4 -mt-2">
+            <div className="text-center text-5xl font-black">
+              <div>
+                {currency === UNITS.USD && SYMBOLS.USD}
+                <CountUp
+                  end={convertCurrency(jackpot)}
+                  duration={2}
+                  decimals={currency === UNITS.USD ? 2 : 5}
+                  useEasing
+                  formattingFn={currency === UNITS.USD && numberWithCommas}
+                />
+                {currency === UNITS.ETH && SYMBOLS.ETH}
+              </div>
+            </div>
+            <div className="flex content-center items-center space-x-4">
+              <progress
+                className="progress progress-secondary flex-shrink"
+                value={percentLeft}
+                max="100"
+              ></progress>
+              <span className="flex-grow w-4/5 sm:w-1/4 badge p-4">{percentLeft}% funded</span>
             </div>
           </div>
-          <div className="flex content-center items-center space-x-4">
-            <progress
-              className="progress progress-secondary flex-shrink"
-              value={percentLeft}
-              max="100"
-            ></progress>
-            <span className="flex-grow w-full sm:w-1/4 badge p-4">{percentLeft}% funded</span>
-          </div>
         </div>
-
         <div className="bg-base-200 bg-opacity-80 p-8 rounded">
           <Row label="Total Entries" value={numOfEntries && numOfEntries.toString()} />
           <Row label="Entries Needed" value={entriesLeft > 0 ? entriesLeft.toString() : "0"} />
@@ -136,7 +141,12 @@ function App() {
           <>
             <div>
               <div className="text-center">
-                <div className="badge bg-base-100 p-4 text-content max-w-full">{account}</div>
+                <div className="badge bg-base-100 p-4 text-content max-w-full sm:hidden">
+                  {formatAddress(account)}
+                </div>
+                <div className="badge bg-base-100 p-4 text-content max-w-full hidden sm:inline-flex">
+                  {account}
+                </div>
               </div>
 
               <div className="bg-base-200 p-8 rounded -mt-4 z-100">
