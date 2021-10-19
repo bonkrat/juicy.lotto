@@ -17,13 +17,14 @@ import CurrencySwitcher from "./components/CurrencySwitcher";
 import calculateOdds from "./utils/calculateOdds";
 import { BigNumber } from "ethers";
 import CountUp from "react-countup";
-import { SYMBOLS, UNITS } from "./constants";
+import { NETWORK, NETWORK_TO_CHAIN_ID, SYMBOLS, UNITS } from "./constants";
 import numberWithCommas from "./utils/numberWithCommas";
 import BuyEntriesModal from "./components/BuyEntriesModal";
 import EntriesModal from "./components/EntriesModal";
 import logo from "./assets/orange.png";
 import InfoModal from "./components/InfoModal";
 import formatAddress from "./utils/formatAddress";
+import Network from "./components/Network";
 
 function App() {
   const winningNumbers = useGetWinningNumbers();
@@ -31,7 +32,7 @@ function App() {
   const { entries, entryFee, numOfEntries } = useEntries();
   const { jackpot, minJackpot } = useJackpot();
   const stake = useGetStake();
-  const { account } = useEthers();
+  const { account, chainId } = useEthers();
   const { maxNum, state } = useLottoSettings();
   const odds = maxNum && calculateOdds(maxNum.toNumber(), 3);
   const { drawNumbers } = useDrawNumbers();
@@ -44,6 +45,7 @@ function App() {
     minJackpot > 0 && jackpot > 0
       ? Math.floor((100 / minJackpot.mul(100).div(jackpot).toNumber()) * 100)
       : 0;
+  const matchedNetwork = account && NETWORK_TO_CHAIN_ID[NETWORK] === chainId;
 
   // TODO refactor this
   const juicyLottoContract = useJuicyLottoContract();
@@ -65,9 +67,10 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto pt-2 px-8 sm:px-8 md:px-8 lg:px-36 xl:px-72 2xl:px-96 mb-8">
-      <div className="relative w-full">
+    <div className="container mx-auto pt-4 px-8 sm:px-8 md:px-8 lg:px-36 xl:px-72 2xl:px-96 mb-8">
+      <div className="w-full flex justify-between items-center">
         <CurrencySwitcher />
+        <Network />
         <InfoModal />
       </div>
       <div className="flex flex-col justify-center space-y-4">
@@ -119,7 +122,7 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="bg-base-200 bg-opacity-80 p-8 rounded">
+        <div className="bg-base-200 bg-opacity-80 p-2 sm:p-8 rounded">
           <Row label="Total Entries" value={numOfEntries && numOfEntries.toString()} />
           <Row label="Entries Needed" value={entriesLeft > 0 ? entriesLeft.toString() : "0"} />
           <Row label="Entry Fee" value={entryFee && formatCurrency(entryFee)} />
@@ -151,7 +154,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="bg-base-200 p-8 rounded -mt-4 z-100">
+              <div className="bg-base-200 p-2 sm:p-8 rounded -mt-4 z-100">
                 <Row
                   label="Entries"
                   value={entries?.length || 0}
@@ -173,7 +176,9 @@ function App() {
               <div className="bg-base-200 p-4 w-full md:w-auto rounded flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-between w-auto">
                 <button
                   className="btn btn-outline btn-neutral w-full sm:w-auto"
-                  disabled={entries?.length === 0 || state === LotteryState.DRAWING}
+                  disabled={
+                    entries?.length === 0 || state === LotteryState.DRAWING || !matchedNetwork
+                  }
                   onClick={withdrawEntries}
                 >
                   Withdraw Entries
@@ -184,7 +189,7 @@ function App() {
               <div className="px-4 w-full md:w-auto flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-between w-auto">
                 <button
                   className="btn btn-accent w-full md:w-auto"
-                  disabled={percentLeft < 100 || state === 1}
+                  disabled={percentLeft < 100 || state === 1 || !matchedNetwork}
                   onClick={() => {
                     drawNumbers();
                   }}
@@ -194,7 +199,7 @@ function App() {
 
                 <button
                   className="btn btn-secondary w-full md:w-auto"
-                  disabled={stake.toString() === "0"}
+                  disabled={stake.toString() === "0" || !matchedNetwork}
                   onClick={() => withdrawStake()}
                 >
                   Collect Winnings

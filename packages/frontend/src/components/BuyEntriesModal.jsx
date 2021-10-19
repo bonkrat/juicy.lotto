@@ -1,4 +1,6 @@
+import { ChainId, useEthers } from "@usedapp/core";
 import React, { useEffect, useState } from "react";
+import { NETWORK, NETWORK_TO_CHAIN_ID } from "../constants";
 import CurrencyContainer from "../containers/Currency";
 import { useEntries, useLottoSettings } from "../hooks/JuicyLotto";
 import Row from "./Row";
@@ -50,6 +52,8 @@ function BuyEntriesModal() {
   const [number, setNumber] = useState(pickNum);
   const { state } = useLottoSettings();
   const [showBuyModal, setShowBuyModal] = useState(false);
+  const { account, chainId } = useEthers();
+  const matchedNetwork = account && NETWORK_TO_CHAIN_ID[NETWORK] === chainId;
 
   useEffect(() => {
     setNumber(pickNum());
@@ -61,7 +65,7 @@ function BuyEntriesModal() {
       <button
         className="btn btn-primary w-full sm:w-auto"
         onClick={() => setShowBuyModal(true)}
-        disabled={state === 1}
+        disabled={state === 1 || !account || !matchedNetwork}
       >
         Buy Entries
       </button>

@@ -5,7 +5,7 @@ function InfoModal() {
   return (
     <>
       <button
-        className="absolute top-4 right-4 btn btn-neutral font-bold text-lg uppercase"
+        className="btn btn-neutral font-bold text-lg uppercase"
         onClick={() => setShowModal(true)}
       >
         ?

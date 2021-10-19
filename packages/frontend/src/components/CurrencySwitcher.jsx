@@ -6,10 +6,7 @@ function CurrencySwitcher() {
   const { currency, toggleCurrency } = Currency.useContainer();
 
   return (
-    <button
-      className="relative top-4 left-4 btn btn-neutral font-bold text-lg"
-      onClick={toggleCurrency}
-    >
+    <button className="btn btn-neutral font-bold text-lg" onClick={toggleCurrency}>
       {SYMBOLS[currency]}
     </button>
   );

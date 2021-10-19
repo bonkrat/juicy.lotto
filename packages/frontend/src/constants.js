@@ -19,21 +19,24 @@ const JUICY_LOTTO_ADDRESSES = {
 
 export const MAINNET = "mainnet";
 export const RINKEBY = "rinkeby";
-export const KOVAN = "kovan";
 export const LOCALHOST = "localhost";
 
 export const NETWORK = import.meta.env.VITE_INFURA_NETWORK || "localhost";
 
-const localhostChainId = 31337;
+const localhostChainId = 1337;
 const rinkebyChainId = ChainId.Rinkeby;
-const kovanChainId = ChainId.Kovan;
 const mainnetChainId = ChainId.Mainnet;
 
 export const NETWORK_TO_CHAIN_ID = {
   localhost: localhostChainId,
   rinkeby: rinkebyChainId,
-  kovan: kovanChainId,
   mainnet: mainnetChainId,
+};
+
+export const CHAIN_ID_TO_NETWORK = {
+  [localhostChainId]: LOCALHOST,
+  [rinkebyChainId]: RINKEBY,
+  [mainnetChainId]: MAINNET,
 };
 
 export const JUICY_LOTTO_ABI = JUICY_LOTTO_ABIS[NETWORK];
@@ -53,7 +56,7 @@ export const networkConfig = {
     [ChainId.Rinkeby]: "0x42Ad527de7d4e9d9d011aC45B31D8551f8Fe9821",
     // [ChaindId.Mainnet]: "0xeefBa1e63905eF1D7ACbA5a8513c70307C1cE441",
   },
-  supportedChains: [31337, ChainId.Localhost, ChainId.Rinkeby],
+  supportedChains: [31337, ChainId.Localhost, ChainId.Rinkeby, ChainId.Mainnet],
 };
 
 export const UNITS = {
