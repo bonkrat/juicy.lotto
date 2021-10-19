@@ -40,7 +40,7 @@ const getJuiceTerminalDirectory = () => {
     return "0x71BA69044CbD951AC87124cBEdbC0334AB21F26D";
   }
   if (network === NETWORK_RINKEBY) {
-    return "0x5d03dA1Ec58cf319c4fDbf2E3fE3DDcd887ef9aD";
+    return "0x88d8c9E98E6EdE75252c2473abc9724965fe7474";
   }
   if (network === NETWORK_MAINNET) {
     return "0x46C9999A2EDCD5aA177ed7E8af90c68b7d75Ba46";

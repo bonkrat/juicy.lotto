@@ -37,6 +37,7 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
   mapping(address => uint256) stake;
   // The address that request the current number drawing.
   address numberDrawer;
+  // address
 
   // CHAINLINK VRF
   bytes32 internal keyHash;
@@ -51,6 +52,8 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
   uint256 public jackpot;
   // The percentage Juicebox takes.
   uint256 public juiceboxFee;
+  // Random result from Chainlink VRF.
+  uint256 public randomResult;
   // The last winning numbers.
   uint256[] public winningNumbers;
   // Controls whether to pay out the Juicebox project (false for testing locally).
@@ -61,7 +64,8 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
   // State of the lottery.
   enum LotteryState {
     Open,
-    DrawingNumbers,
+    FetchingRandomNumber,
+    PickWinners,
     Closed
   }
 
@@ -142,7 +146,11 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
   Buys an entry to the lottery for the _entry fee.
   @param _entries an array of entries, each an array of three number values. (e.g. [[1,2,3], [4,5,6]])
  */
-  function buyEntries(uint256[3][] calldata _entries) public payable isState(LotteryState.Open) {
+  function buyEntries(uint256[3][] calldata _entries) public payable {
+    require(
+      state == LotteryState.Open || state == LotteryState.FetchingRandomNumber,
+      "JuicyLotto::buyEntries INVALID_STATE"
+    );
     require(_entries.length > 0, "JuicyLotto::buyEntries INSUFFICIENT_ENTRIES");
     require(msg.value == entryFee * _entries.length, "JuicyLotto::buyEntries INVALID_MSG_VALUE");
 
@@ -185,7 +193,7 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
     require(jackpot >= minJackpot, "JuicyLotto::drawNumbers INSUFFICIENT_JACKPOT_PRIZE");
     require(LINK.balanceOf(address(this)) >= fee, "JuicyLotto::drawNumbers INSUFFICIENT_LINK");
 
-    _changeState(LotteryState.DrawingNumbers);
+    _changeState(LotteryState.FetchingRandomNumber);
 
     requestId = requestRandomness(keyHash, fee);
     numberDrawer = msg.sender;
@@ -202,10 +210,15 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
   function fulfillRandomness(bytes32 _requestId, uint256 _randomness)
     internal
     override
-    isState(LotteryState.DrawingNumbers)
+    isState(LotteryState.FetchingRandomNumber)
   {
+    randomResult = _randomness;
+    _changeState(LotteryState.PickWinners);
+  }
+
+  function pickWinners() public isState(LotteryState.PickWinners) {
     winningNumbers = _expand(
-      _randomness + 1, /* +1 to force above 0 */
+      randomResult + 1, /* +1 to force above 0 */
       3,
       maxNum
     );
@@ -217,10 +230,11 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
     emit WinningNumbers(winningNumbers);
 
     if (winners.length > 0) {
-      // Payout the address that called drawNumbers (5%).
-      uint256 drawerStake = (jackpot * 5) / 100;
-      uint256 availableJackpot = jackpot - drawerStake;
+      // Payout the address that called drawNumbers (2%) and the address that called pickWinners (2%);
+      uint256 drawerStake = (jackpot * 2) / 100;
+      uint256 availableJackpot = jackpot - (drawerStake * 2);
       stake[numberDrawer] = drawerStake;
+      stake[msg.sender] = drawerStake;
       delete numberDrawer;
 
       uint256 winningStake = availableJackpot / winners.length;
@@ -359,12 +373,8 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
   /**
     Close the lottery. 
    */
-  function closeLottery()
-    public
-    onlyOwner
-    isState(LotteryState.Open)
-    isState(LotteryState.DrawingNumbers)
-  {
+  function closeLottery() public onlyOwner {
+    require(state != LotteryState.Closed, "JuicyLotto::closeLottery INVALID_STATE");
     _changeState(LotteryState.Closed);
   }
 

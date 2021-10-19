@@ -66,6 +66,13 @@ export function useDrawNumbers() {
   return { drawNumbers };
 }
 
+export function usePickWinners() {
+  const juicyLottoContract = useJuicyLottoContract();
+  const { send: pickWinners, events } = useContractFunction(juicyLottoContract, "pickWinners");
+  events?.forEach(logEvent);
+  return { pickWinners };
+}
+
 export function useWithdrawStake() {
   const juicyLottoContract = useJuicyLottoContract();
   const { send: withdrawStake, events } = useContractFunction(juicyLottoContract, "withdrawStake");
@@ -82,6 +89,7 @@ export function useEntries() {
   const { send: withdrawEntries } = useContractFunction(juicyLottoContract, "withdrawEntries");
 
   const buyEntries = entries => {
+    console.log(entries);
     entryFee && entries?.length && sendBuyEntries(entries, { value: entries.length * entryFee });
   };
 

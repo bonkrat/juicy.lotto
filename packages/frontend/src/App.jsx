@@ -11,6 +11,7 @@ import {
   useJackpot,
   useLottoSettings,
   useWithdrawStake,
+  usePickWinners,
 } from "./hooks/JuicyLotto";
 import { useJuicyLottoContract } from "./hooks";
 import CurrencySwitcher from "./components/CurrencySwitcher";
@@ -36,6 +37,7 @@ function App() {
   const { maxNum, state } = useLottoSettings();
   const odds = maxNum && calculateOdds(maxNum.toNumber(), 3);
   const { drawNumbers } = useDrawNumbers();
+  const { pickWinners } = usePickWinners();
   const { withdrawStake } = useWithdrawStake();
   const [showEntriesModal, setShowEntriesModal] = useState(false);
 
@@ -57,8 +59,9 @@ function App() {
 
   const LotteryState = {
     OPEN: 0,
-    DRAWING: 1,
-    CLOSED: 2,
+    FETCHING: 1,
+    PICKING: 2,
+    CLOSED: 3,
   };
 
   const getStake = () => {
@@ -85,15 +88,15 @@ function App() {
           <div className="text-center">
             <div
               className={`badge ${
-                state === LotteryState.OPEN
+                [LotteryState.OPEN, LotteryState.FETCHING].includes(state)
                   ? "badge-primary"
-                  : state === LotteryState.DRAWING
+                  : state === LotteryState.PICKING
                   ? "badge-accent"
                   : "badge-error"
               } uppercase leading-none font-black`}
             >
-              {state === LotteryState.OPEN && "Open"}
-              {state === LotteryState.DRAWING && "Drawing Numbers"}
+              {[LotteryState.OPEN, LotteryState.FETCHING].includes(state) && "Open"}
+              {state === LotteryState.PICKING && "Pending Winners"}
               {state === LotteryState.CLOSED && "Closed"}
             </div>
           </div>
@@ -122,7 +125,7 @@ function App() {
             </div>
           </div>
         </div>
-        <div className="bg-base-200 bg-opacity-80 p-2 sm:p-8 rounded">
+        <div className="bg-base-200 bg-opacity-80 p-2 sm:p-4 rounded">
           <Row label="Total Entries" value={numOfEntries && numOfEntries.toString()} />
           <Row label="Entries Needed" value={entriesLeft > 0 ? entriesLeft.toString() : "0"} />
           <Row label="Entry Fee" value={entryFee && formatCurrency(entryFee)} />
@@ -154,7 +157,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="bg-base-200 p-2 sm:p-8 rounded -mt-4 z-100">
+              <div className="bg-base-200 p-2 sm:p-4 rounded -mt-4 z-100">
                 <Row
                   label="Entries"
                   value={entries?.length || 0}
@@ -177,7 +180,7 @@ function App() {
                 <button
                   className="btn btn-outline btn-neutral w-full sm:w-auto"
                   disabled={
-                    entries?.length === 0 || state === LotteryState.DRAWING || !matchedNetwork
+                    entries?.length === 0 || state === LotteryState.PICKING || !matchedNetwork
                   }
                   onClick={withdrawEntries}
                 >
@@ -187,15 +190,31 @@ function App() {
               </div>
 
               <div className="px-4 w-full md:w-auto flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-between w-auto">
-                <button
-                  className="btn btn-accent w-full md:w-auto"
-                  disabled={percentLeft < 100 || state === 1 || !matchedNetwork}
-                  onClick={() => {
-                    drawNumbers();
-                  }}
-                >
-                  Draw Numbers
-                </button>
+                {state === LotteryState.PICKING || state === LotteryState.Fetching ? (
+                  <button
+                    className="btn btn-accent w-full md:w-auto"
+                    onClick={() => {
+                      pickWinners();
+                    }}
+                    disabled={state === LotteryState.FETCHING}
+                  >
+                    Pick Winners
+                  </button>
+                ) : (
+                  <button
+                    className={`btn btn-accent w-full md:w-auto ${
+                      state === LotteryState.FETCHING ? "loading" : ""
+                    }`}
+                    disabled={
+                      percentLeft < 100 || state === LotteryState.FETCHING || !matchedNetwork
+                    }
+                    onClick={() => {
+                      drawNumbers();
+                    }}
+                  >
+                    {state === LotteryState.FETCHING ? "Drawing Numbers.." : "Draw Numbers"}
+                  </button>
+                )}
 
                 <button
                   className="btn btn-secondary w-full md:w-auto"
