@@ -10,6 +10,7 @@ import {
   useGetWinningNumbers,
   useJackpot,
   useLottoSettings,
+  useWithdrawStake,
 } from "./hooks/JuicyLotto";
 import { useJuicyLottoContract } from "./hooks";
 import CurrencySwitcher from "./components/CurrencySwitcher";
@@ -34,6 +35,7 @@ function App() {
   const { maxNum, state } = useLottoSettings();
   const odds = maxNum && calculateOdds(maxNum.toNumber(), 3);
   const { drawNumbers } = useDrawNumbers();
+  const { withdrawStake } = useWithdrawStake();
   const [showEntriesModal, setShowEntriesModal] = useState(false);
 
   const poolLeft = minJackpot.sub(jackpot);
@@ -193,6 +195,7 @@ function App() {
                 <button
                   className="btn btn-secondary w-full md:w-auto"
                   disabled={stake.toString() === "0"}
+                  onClick={() => withdrawStake()}
                 >
                   Collect Winnings
                 </button>

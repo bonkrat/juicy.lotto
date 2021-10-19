@@ -66,6 +66,13 @@ export function useDrawNumbers() {
   return { drawNumbers };
 }
 
+export function useWithdrawStake() {
+  const juicyLottoContract = useJuicyLottoContract();
+  const { send: withdrawStake, events } = useContractFunction(juicyLottoContract, "withdrawStake");
+  events?.forEach(logEvent);
+  return { withdrawStake };
+}
+
 export function useEntries() {
   const [entries] = useJuicyCallWithAccount("getEntries");
   const [entryFee] = useJuicyCall("entryFee");
