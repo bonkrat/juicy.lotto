@@ -279,8 +279,7 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
   /**
     Withdraw any winnings you have staked. 
    */
-  function withdrawStake(address account) public {
-    require(account == msg.sender, "JuicyLotto::withdrawStake INVALID_ACCOUNT_ADDRESS");
+  function withdrawStake() public {
     require(stake[msg.sender] > 0, "JuicyLotto::withdrawStake INSUFFICIENT_ENTRANT_STAKE");
     uint256 _total = stake[msg.sender];
     stake[msg.sender] = 0;

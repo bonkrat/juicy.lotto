@@ -361,7 +361,7 @@ describe("JuicyLotto Contract", () => {
       const requestId = draw_tx_receipt.events[3].topics[0];
       await vrfCoordinator.callBackWithRandomness(requestId, expected, juicyLotto.address);
 
-      const withdrawStakeTransaction = await juicyLotto.connect(addr1).withdrawStake(addr1.address);
+      const withdrawStakeTransaction = await juicyLotto.connect(addr1).withdrawStake();
       const withdraw_stake_tx_receipt = await withdrawStakeTransaction.wait(1);
       const withdrawGas = withdraw_stake_tx_receipt.gasUsed.mul(withdrawStakeTransaction.gasPrice);
 

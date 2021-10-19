@@ -200,7 +200,9 @@ function App() {
                 <button
                   className="btn btn-secondary w-full md:w-auto"
                   disabled={stake.toString() === "0" || !matchedNetwork}
-                  onClick={() => withdrawStake()}
+                  onClick={() => {
+                    withdrawStake();
+                  }}
                 >
                   Collect Winnings
                 </button>

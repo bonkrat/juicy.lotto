@@ -685,13 +685,7 @@ export default [
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
+    "inputs": [],
     "name": "withdrawStake",
     "outputs": [],
     "stateMutability": "nonpayable",
