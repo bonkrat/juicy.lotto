@@ -17,23 +17,20 @@ function FundingProgress() {
       minJackpot > 0 && jackpot > 0
         ? Math.floor((100 / minJackpot.mul(100).div(jackpot).toNumber()) * 100)
         : 0,
-    [progress, setProgress] = useState(0);
+    [progress, setProgress] = useState(0),
+    updateProgressBar = () => {
+      setProgress(prevProgress => {
+        if (prevProgress < percentLeft) {
+          return prevProgress + 1;
+        } else {
+          setProgress(percentLeft);
+        }
+      });
+    };
 
   useEffect(() => {
-    let interval = setInterval(() => {
-      if (progress < percentLeft || progress === percentLeft) {
-        setProgress(prevProps => {
-          return prevProps + 1;
-        });
-      } else {
-        setProgress(percentLeft);
-      }
-    }, 1);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, [percentLeft]);
+    requestAnimationFrame(updateProgressBar);
+  }, [percentLeft, progress]);
 
   return (
     <div className="flex content-center items-center space-x-4 w-full">
