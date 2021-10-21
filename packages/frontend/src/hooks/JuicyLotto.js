@@ -61,7 +61,11 @@ function useJuicyCallWithAccount(method, ...args) {
 
 export function useDrawNumbers() {
   const juicyLottoContract = useJuicyLottoContract();
-  const { send: drawNumbers, events } = useContractFunction(juicyLottoContract, "drawNumbers");
+  const {
+    send: drawNumbers,
+    state: drawNumbersState,
+    events,
+  } = useContractFunction(juicyLottoContract, "drawNumbers");
   events?.forEach(logEvent);
   return { drawNumbers };
 }
@@ -85,11 +89,13 @@ export function useEntries() {
   const [entryFee] = useJuicyCall("entryFee");
   const [numOfEntries] = useJuicyCall("numOfEntries");
   const juicyLottoContract = useJuicyLottoContract();
-  const { send: sendBuyEntries } = useContractFunction(juicyLottoContract, "buyEntries");
+  const { send: sendBuyEntries, state: buyEntriesState } = useContractFunction(
+    juicyLottoContract,
+    "buyEntries",
+  );
   const { send: withdrawEntries } = useContractFunction(juicyLottoContract, "withdrawEntries");
 
   const buyEntries = entries => {
-    console.log(entries);
     entryFee && entries?.length && sendBuyEntries(entries, { value: entries.length * entryFee });
   };
 
@@ -112,7 +118,7 @@ export function useJackpot() {
   const [jackpot] = useJuicyCall("jackpot");
   const [minJackpot] = useJuicyCall("minJackpot");
 
-  return { jackpot: jackpot ?? BigNumber.from(0), minJackpot: minJackpot ?? BigNumber.from(0) };
+  return { jackpot, minJackpot: minJackpot ?? BigNumber.from(0) };
 }
 
 export function useGetStake() {

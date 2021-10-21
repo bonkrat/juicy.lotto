@@ -1,9 +1,9 @@
-import { ChainId, useEthers } from "@usedapp/core";
+import { useEthers } from "@usedapp/core";
 import React, { useEffect, useState } from "react";
 import { NETWORK, NETWORK_TO_CHAIN_ID } from "../constants";
 import CurrencyContainer from "../containers/Currency";
 import { useEntries, useLottoSettings } from "../hooks/JuicyLotto";
-import Row from "./Row";
+import Row from "./shared/Row";
 
 function times(num, cb) {
   let result = [];
@@ -27,12 +27,10 @@ function NumberSelect({ onChange, val }) {
   const { maxNum } = useLottoSettings();
 
   return (
-    <select className="select select-bordered w-1/4 sm:w-24" onChange={onChange}>
-      <option disabled="disabled" selected={val === undefined}>
-        Number
-      </option>
+    <select className="select select-bordered w-1/4 sm:w-24" value={val} onChange={onChange}>
+      <option disabled="disabled">Number</option>
       {times(maxNum, num => (
-        <option selected={val == num}>{num}</option>
+        <option key={num}>{num}</option>
       ))}
     </select>
   );
@@ -74,9 +72,15 @@ function BuyEntriesModal() {
           <div className="flex flex-wrap flex-row content-start justify-start h-64 mb-4 overflow-y-scroll bg-neutral p-2 sm:p-4 rounded">
             {entries?.map(entry => {
               return (
-                <div className="flex justify-between items-center w-full sm:w-1/2 p-2">
-                  {entry.numbers.map(num => (
-                    <div className="flex items-center justify-center font-bold border-primary border-2 rounded-full w-16 h-16 text-lg sm:w-12 sm:h-12">
+                <div
+                  key={entry.id}
+                  className="flex justify-between items-center w-full sm:w-1/2 p-2"
+                >
+                  {entry.numbers.map((num, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-center font-bold border-primary border-2 rounded-full w-16 h-16 text-lg sm:w-12 sm:h-12"
+                    >
                       {num}
                     </div>
                   ))}
@@ -116,6 +120,7 @@ function BuyEntriesModal() {
                   numberCopy[num] = value;
                   setNumber(numberCopy);
                 }}
+                key={i}
                 val={number[i]}
               />
             ))}

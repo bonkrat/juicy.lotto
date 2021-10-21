@@ -39,6 +39,13 @@ export const CHAIN_ID_TO_NETWORK = {
   [mainnetChainId]: MAINNET,
 };
 
+export const LotteryState = {
+  OPEN: 0,
+  FETCHING: 1,
+  PICKING: 2,
+  CLOSED: 3,
+};
+
 export const JUICY_LOTTO_ABI = JUICY_LOTTO_ABIS[NETWORK];
 export const JUICY_LOTTO_ADDRESS = JUICY_LOTTO_ADDRESSES[NETWORK];
 

@@ -9,17 +9,18 @@ function EntriesModal({ open, onClose }) {
       <div className="modal-box">
         <div className="flex flex-wrap flex-row justify-center sm:justify-start mb-2 overflow-y-scroll">
           {!entries?.length && <div>No Entries</div>}
-          {entries?.map(entry => {
-            return (
-              <div className="flex justify-center items-center p-2">
-                {entry.map(num => (
-                  <div className="flex items-center justify-center text-xl font-bold border-primary border-2 rounded-full m-2 h-12 w-12">
-                    {BigNumber.from(num).toNumber()}
-                  </div>
-                ))}
-              </div>
-            );
-          })}
+          {entries?.map((entry, i) => (
+            <div key={i} className="flex justify-center items-center p-2">
+              {entry.map((num, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-center text-xl font-bold border-primary border-2 rounded-full m-2 h-12 w-12"
+                >
+                  {BigNumber.from(num).toNumber()}
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
         <div className="modal-action">
           <a onClick={onClose} className="btn">

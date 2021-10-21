@@ -1,8 +1,17 @@
-import { useEthers, useContractFunction } from "@usedapp/core";
+import { useContractFunction, useEthers } from "@usedapp/core";
+import { BigNumber } from "ethers";
 import React, { useState } from "react";
+import { FundingProgress, Jackpot, Logo, LotteryStateBadge } from "./components";
+import BuyEntriesModal from "./components/BuyEntriesModal";
 import ConnectWalletButton from "./components/ConnectWalletButton";
-import Row from "./components/Row";
+import CurrencySwitcher from "./components/CurrencySwitcher";
+import EntriesModal from "./components/EntriesModal";
+import InfoModal from "./components/InfoModal";
+import Network from "./components/Network";
+import { LoadingWrapper, Row } from "./components/shared";
+import { NETWORK, NETWORK_TO_CHAIN_ID, LotteryState } from "./constants";
 import CurrencyContainer from "./containers/Currency";
+import { useJuicyLottoContract } from "./hooks";
 import {
   useDrawNumbers,
   useEntries,
@@ -10,26 +19,16 @@ import {
   useGetWinningNumbers,
   useJackpot,
   useLottoSettings,
-  useWithdrawStake,
   usePickWinners,
+  useWithdrawStake,
 } from "./hooks/JuicyLotto";
-import { useJuicyLottoContract } from "./hooks";
-import CurrencySwitcher from "./components/CurrencySwitcher";
 import calculateOdds from "./utils/calculateOdds";
-import { BigNumber } from "ethers";
-import CountUp from "react-countup";
-import { NETWORK, NETWORK_TO_CHAIN_ID, SYMBOLS, UNITS } from "./constants";
-import numberWithCommas from "./utils/numberWithCommas";
-import BuyEntriesModal from "./components/BuyEntriesModal";
-import EntriesModal from "./components/EntriesModal";
-import logo from "./assets/orange.png";
-import InfoModal from "./components/InfoModal";
 import formatAddress from "./utils/formatAddress";
-import Network from "./components/Network";
+import numberWithCommas from "./utils/numberWithCommas";
 
 function App() {
   const winningNumbers = useGetWinningNumbers();
-  const { currency, formatCurrency, convertCurrency } = CurrencyContainer.useContainer();
+  const { formatCurrency } = CurrencyContainer.useContainer();
   const { entries, entryFee, numOfEntries } = useEntries();
   const { jackpot, minJackpot } = useJackpot();
   const stake = useGetStake();
@@ -41,7 +40,7 @@ function App() {
   const { withdrawStake } = useWithdrawStake();
   const [showEntriesModal, setShowEntriesModal] = useState(false);
 
-  const poolLeft = minJackpot.sub(jackpot);
+  const poolLeft = jackpot ? minJackpot.sub(jackpot) : BigNumber.from(0);
   const entriesLeft = poolLeft.div(entryFee || BigNumber.from(1));
   const percentLeft =
     minJackpot > 0 && jackpot > 0
@@ -57,17 +56,14 @@ function App() {
     account && sendWithdrawEntries(account);
   };
 
-  const LotteryState = {
-    OPEN: 0,
-    FETCHING: 1,
-    PICKING: 2,
-    CLOSED: 3,
-  };
-
   const getStake = () => {
     const val = stake || 0;
     return formatCurrency(val);
   };
+
+  const showLottoData =
+      numOfEntries && numOfEntries.toString() && Number.parseInt(entriesLeft) && odds,
+    showAccountData = entries && !Number.isNaN(stake);
 
   return (
     <div className="container mx-auto pt-4 px-8 sm:px-8 md:px-8 lg:px-36 xl:px-72 2xl:px-96 mb-8">
@@ -77,60 +73,34 @@ function App() {
         <InfoModal />
       </div>
       <div className="flex flex-col justify-center space-y-4">
-        <div className="mx-8 sm:mx-36 md:mx-48 flex justify-center items-center">
-          <div className="text-6xl sm:text-7xl md:text-8xl italic absolute px-2 mt-8 md:mt-16 bg-gradient-to-r from-primary to-primary-focus">
-            juicy lotto
-          </div>
-          <img className="-ml-4 sm:-ml-8" src={logo} />
-        </div>
-
+        <Logo />
         <div>
-          <div className="text-center">
-            <div
-              className={`badge ${
-                [LotteryState.OPEN, LotteryState.FETCHING].includes(state)
-                  ? "badge-primary"
-                  : state === LotteryState.PICKING
-                  ? "badge-accent"
-                  : "badge-error"
-              } uppercase leading-none font-black`}
-            >
-              {[LotteryState.OPEN, LotteryState.FETCHING].includes(state) && "Open"}
-              {state === LotteryState.PICKING && "Pending Winners"}
-              {state === LotteryState.CLOSED && "Closed"}
-            </div>
-          </div>
+          <LotteryStateBadge />
 
-          <div className="bg-base-200 bg-opacity-50 p-4 rounded flex flex-col justify-center space-y-4 -mt-2">
-            <div className="text-center text-5xl font-black">
-              <div>
-                {currency === UNITS.USD && SYMBOLS.USD}
-                <CountUp
-                  end={convertCurrency(jackpot)}
-                  duration={2}
-                  decimals={currency === UNITS.USD ? 2 : 5}
-                  useEasing
-                  formattingFn={currency === UNITS.USD && numberWithCommas}
-                />
-                {currency === UNITS.ETH && SYMBOLS.ETH}
-              </div>
-            </div>
-            <div className="flex content-center items-center space-x-4">
-              <progress
-                className="progress progress-secondary flex-shrink"
-                value={percentLeft}
-                max="100"
-              ></progress>
-              <span className="flex-grow w-4/5 sm:w-1/4 badge p-4">{percentLeft}% funded</span>
-            </div>
+          <div className="bg-base-200 bg-opacity-50 p-4 rounded flex flex-col justify-center items-center space-y-4 -mt-2">
+            <Jackpot />
+            <FundingProgress />
           </div>
         </div>
         <div className="bg-base-200 bg-opacity-80 p-2 sm:p-4 rounded">
-          <Row label="Total Entries" value={numOfEntries && numOfEntries.toString()} />
-          <Row label="Entries Needed" value={entriesLeft > 0 ? entriesLeft.toString() : "0"} />
-          <Row label="Entry Fee" value={entryFee && formatCurrency(entryFee)} />
+          <Row
+            label="Total Entries"
+            value={numOfEntries && numOfEntries.toString()}
+            showRow={showLottoData}
+          />
+          <Row
+            label="Entries Needed"
+            value={entriesLeft > 0 ? entriesLeft.toString() : "0"}
+            showRow={showLottoData}
+          />
+          <Row
+            label="Entry Fee"
+            value={entryFee && formatCurrency(entryFee)}
+            showRow={showLottoData}
+          />
           <Row
             label="Last Winning Numbers"
+            showRow={showLottoData}
             value={
               winningNumbers.length
                 ? winningNumbers.map((num, i) => (
@@ -141,11 +111,15 @@ function App() {
                   ))
                 : "N/A"
             }
+            showRow={showLottoData}
           />
-          <Row label="Odds of Winning" value={odds && `1 in ${numberWithCommas(odds)}`} />
+          <Row
+            label="Odds of Winning"
+            value={odds && `1 in ${numberWithCommas(odds)}`}
+            showRow={showLottoData}
+          />
         </div>
-
-        {account ? (
+        {account && (
           <>
             <div>
               <div className="text-center">
@@ -158,81 +132,85 @@ function App() {
               </div>
 
               <div className="bg-base-200 p-2 sm:p-4 rounded -mt-4 z-100">
-                <Row
-                  label="Entries"
-                  value={entries?.length || 0}
-                  onClick={() => {
-                    setShowEntriesModal(true);
-                  }}
-                />
-                <EntriesModal
-                  open={showEntriesModal}
-                  onClose={() => {
-                    setShowEntriesModal(false);
-                  }}
-                />
-                <Row label="Winnings" value={getStake()} />
+                <LoadingWrapper showComponent={account}>
+                  <Row
+                    label="Entries"
+                    value={entries?.length || 0}
+                    onClick={() => {
+                      setShowEntriesModal(true);
+                    }}
+                    showRow={showAccountData}
+                  />
+                  <EntriesModal
+                    open={showEntriesModal}
+                    onClose={() => {
+                      setShowEntriesModal(false);
+                    }}
+                  />
+                  <Row label="Winnings" value={getStake()} showRow={showAccountData} />
+                </LoadingWrapper>
               </div>
             </div>
 
             <div className="flex flex-col space-y-8 md:space-y-0 md:flex-row md:justify-between items-center">
-              <div className="bg-base-200 p-4 w-full md:w-auto rounded flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-between w-auto">
-                <button
-                  className="btn btn-outline btn-neutral w-full sm:w-auto"
-                  disabled={
-                    entries?.length === 0 || state === LotteryState.PICKING || !matchedNetwork
-                  }
-                  onClick={withdrawEntries}
-                >
-                  Withdraw Entries
-                </button>
-                <BuyEntriesModal />
-              </div>
-
-              <div className="px-4 w-full md:w-auto flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-between w-auto">
-                {state === LotteryState.PICKING || state === LotteryState.Fetching ? (
+              <LoadingWrapper showComponent={showAccountData}>
+                <div className="bg-base-200 p-4 w-full md:w-auto rounded flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-between w-auto">
                   <button
-                    className="btn btn-accent w-full md:w-auto"
-                    onClick={() => {
-                      pickWinners();
-                    }}
-                    disabled={state === LotteryState.FETCHING}
-                  >
-                    Pick Winners
-                  </button>
-                ) : (
-                  <button
-                    className={`btn btn-accent w-full md:w-auto ${
-                      state === LotteryState.FETCHING ? "loading" : ""
-                    }`}
+                    className="btn btn-outline btn-neutral w-full sm:w-auto"
                     disabled={
-                      percentLeft < 100 || state === LotteryState.FETCHING || !matchedNetwork
+                      entries?.length === 0 || state === LotteryState.PICKING || !matchedNetwork
                     }
+                    onClick={withdrawEntries}
+                  >
+                    Withdraw Entries
+                  </button>
+                  <BuyEntriesModal />
+                </div>
+
+                <div className="px-4 w-full md:w-auto flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4 justify-between w-auto">
+                  {state === LotteryState.PICKING || state === LotteryState.Fetching ? (
+                    <button
+                      className="btn btn-accent w-full md:w-auto"
+                      onClick={() => {
+                        pickWinners();
+                      }}
+                      disabled={state === LotteryState.FETCHING}
+                    >
+                      Pick Winners
+                    </button>
+                  ) : (
+                    <button
+                      className={`btn btn-accent w-full md:w-auto ${
+                        state === LotteryState.FETCHING ? "loading" : ""
+                      }`}
+                      disabled={
+                        percentLeft < 100 || state === LotteryState.FETCHING || !matchedNetwork
+                      }
+                      onClick={() => {
+                        drawNumbers();
+                      }}
+                    >
+                      {state === LotteryState.FETCHING ? "Drawing Numbers.." : "Draw Numbers"}
+                    </button>
+                  )}
+
+                  <button
+                    className="btn btn-secondary w-full md:w-auto"
+                    disabled={stake.toString() === "0" || !matchedNetwork}
                     onClick={() => {
-                      drawNumbers();
+                      withdrawStake();
                     }}
                   >
-                    {state === LotteryState.FETCHING ? "Drawing Numbers.." : "Draw Numbers"}
+                    Collect Winnings
                   </button>
-                )}
-
-                <button
-                  className="btn btn-secondary w-full md:w-auto"
-                  disabled={stake.toString() === "0" || !matchedNetwork}
-                  onClick={() => {
-                    withdrawStake();
-                  }}
-                >
-                  Collect Winnings
-                </button>
-              </div>
+                </div>
+              </LoadingWrapper>
             </div>
 
             <div className="flex justify-between mb-24 sm:m-0"></div>
           </>
-        ) : (
-          <ConnectWalletButton />
         )}
+        {account === null && <ConnectWalletButton />}
       </div>
     </div>
   );
