@@ -228,6 +228,19 @@ export default [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getLinkBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -494,6 +507,19 @@ export default [
       }
     ],
     "name": "setJuiceboxFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_maxNum",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxNum",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

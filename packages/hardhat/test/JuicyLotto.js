@@ -98,6 +98,13 @@ describe("JuicyLotto Contract", () => {
     });
   });
 
+  describe.only("getLinkBalance()", () => {
+    it("should return the LINK balance", async () => {
+      await linkToken.transfer(juicyLotto.address, 5);
+      expect(await juicyLotto.getLinkBalance()).to.equal(5);
+    });
+  });
+
   describe("withdrawLink()", () => {
     it("lets the owner withdraw LINK token", async () => {
       await linkToken.transfer(juicyLotto.address, 5);

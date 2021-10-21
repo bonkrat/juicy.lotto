@@ -11,7 +11,6 @@ async function publishContractAddress(publishDir, contractName, address) {
 
 async function publishContract(publishDir, contractName) {
   console.log("💽 Publishing", chalk.cyan(contractName), "to", chalk.gray(publishDir));
-  console.log("bre.config.paths.artifacts", bre.config.paths.artifacts);
   try {
     let contract = fs
       .readFileSync(

@@ -398,13 +398,23 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
   }
 
   function setMinJackpot(uint256 _minJackpot) public onlyOwner {
-    require(_minJackpot > 0, "JuicyLotto::setMinJackpot INSUFFICIENT_MIN_JACKPOT");
     minJackpot = _minJackpot;
   }
 
   function setJuiceboxFee(uint256 _juiceboxFee) public onlyOwner {
-    require(minJackpot > 0, "JuicyLotto::setJuiceboxFee INSUFFICIENT_JUICEBOX_FEE");
     juiceboxFee = _juiceboxFee;
+  }
+
+  function setMaxNum(uint256 _maxNum) public onlyOwner {
+    require(_maxNum > 0, "JuicyLotto::setMaxNum INVALID_MAX_NUM");
+    maxNum = _maxNum;
+  }
+
+  /**
+  Get LINK balance on the contract.
+   */
+  function getLinkBalance() public view returns (uint256) {
+    return LINK.balanceOf(address(this));
   }
 
   /**
@@ -419,13 +429,7 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
     Returns the latest USD/ETH price
   */
   function getLatestUSDEthPrice() public view returns (int256) {
-    (
-      uint80 roundID,
-      int256 price,
-      uint256 startedAt,
-      uint256 timeStamp,
-      uint80 answeredInRound
-    ) = priceFeed.latestRoundData();
+    (, int256 price, , , ) = priceFeed.latestRoundData();
     return price;
   }
 

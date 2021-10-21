@@ -7,6 +7,7 @@ const R = require("ramda");
 const { ethers } = require("hardhat");
 const { utils, BigNumber } = require("ethers");
 const { MultiCall } = require("@usedapp/core");
+const { verify } = require("./verify");
 
 dotenv.config();
 
@@ -254,26 +255,23 @@ const main = async () => {
 
   console.log("\n");
 
-  const juicyLotto = await deploy(
-    "JuicyLotto",
-    [
-      maxNum,
-      entryFee,
-      minJackpot,
-      juiceboxFee,
-      vrfCoordinatorAddress,
-      linkAddress,
-      keyHash,
-      fee,
-      isJuiceEnabled,
-      juiceProjectId,
-      juiceTerminalDirectory,
-      v3AggregatorAddress,
-    ],
-    {
-      gasLimit: 9000000,
-    },
-  );
+  const contractArgs = [
+    maxNum,
+    entryFee,
+    minJackpot,
+    juiceboxFee,
+    vrfCoordinatorAddress,
+    linkAddress,
+    keyHash,
+    fee,
+    isJuiceEnabled,
+    juiceProjectId,
+    juiceTerminalDirectory,
+    v3AggregatorAddress,
+  ];
+  const juicyLotto = await deploy("JuicyLotto", contractArgs, {
+    gasLimit: 9000000,
+  });
 
   console.log("\n");
 
@@ -310,6 +308,12 @@ const main = async () => {
   );
 
   console.log(chalk.green("✔ Deployed for network:"), network, "\n");
+
+  if (network !== NETWORK_LOCALHOST) {
+    console.log(chalk.yellow("Waiting for five confirmations..."));
+    await juicyLotto.deployTransaction.wait(5);
+    await verify(juicyLotto.address, contractArgs);
+  }
 
   await publish(network);
 };
