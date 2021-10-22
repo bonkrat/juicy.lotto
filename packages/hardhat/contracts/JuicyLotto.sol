@@ -353,10 +353,12 @@ contract JuicyLotto is VRFConsumerBase, Ownable, JuiceboxProject {
 
     delete entrants;
 
-    if (juiceboxEnabled) {
-      _takeFee(jackpot, msg.sender, "Liquidated Juicy Lotto jackpot", false);
-    } else {
-      payable(_receipient).transfer(jackpot);
+    if (jackpot > 0) {
+      if (juiceboxEnabled) {
+        _takeFee(jackpot, msg.sender, "Liquidated Juicy Lotto jackpot", false);
+      } else {
+        payable(_receipient).transfer(jackpot);
+      }
     }
 
     jackpot = 0;
